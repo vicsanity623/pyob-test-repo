@@ -112,10 +112,10 @@ footer a{color:var(--accent);text-decoration:none}
 
 <script>
 // ─── Constants (must match Python) ───────────────────────────────────────────
-const BRAIN_SIZE      = 100;
-const MEMORY_SIZE     = 32;
-const ATTENTION_WIN   = 16;
-const BRAIN_TICK_EVERY= 3;
+const BRAIN_SIZE      = 256;
+const MEMORY_SIZE     = 64;
+const ATTENTION_WIN   = 32;
+const BRAIN_TICK_EVERY= 2;
 const WORLD_SIZE      = 50;
 
 // ─── CTRNN ───────────────────────────────────────────────────────────────────
@@ -334,7 +334,7 @@ function frame(ts){
     const unc= Math.max(0,(100-env.health)/100)*.4 + Math.min(1,env.wallContacts/50)*.3 + ((env.ticks-env.lastFoodTime)>200?.3:0);
     brain.tick(0.1,sensors,unc);
   }
-  const motor=[brain.lastOutputs[BRAIN_SIZE-2],brain.lastOutputs[BRAIN_SIZE-1]];
+  let rawM = [brain.lastOutputs[BRAIN_SIZE-2], brain.lastOutputs[BRAIN_SIZE-1]]; if(!window._smoothM) window._smoothM = rawM; window._smoothM = [   0.7 * window._smoothM[0] + 0.3 * rawM[0],   0.7 * window._smoothM[1] + 0.3 * rawM[1] ]; const motor = window._smoothM;
   const alive=env.update(motor);
   if(!alive) resetEnv();
   simTick++;
