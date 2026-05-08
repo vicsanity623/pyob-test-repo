@@ -208,11 +208,22 @@ class Env {
     this.foodVisible=(this.ticks%300)<240;
     const nd=(t)=>{const dx=t[0]-this.agentPos[0],dy=t[1]-this.agentPos[1],d=Math.sqrt(dx*dx+dy*dy)+.001;return[[dx/d,dy/d],d]};
     let foodS,foodD;
-    if(this.foodVisible){
-      let best=Infinity,bi=0;
-      this.foodPos.forEach(([fx,fy],i)=>{const d=(fx-this.agentPos[0])**2+(fy-this.agentPos[1])**2;if(d<best){best=d;bi=i}});
-      [foodS,foodD]=nd(this.foodPos[bi]);
-    }else{foodS=[0,0];foodD=50}
+    if(hitWall){
+      this.wallContacts++;
+      nx=this.agentPos[0]; ny=this.agentPos[1]; // Kill velocity
+    }
+    this.agentPos=[Math.max(0.1,Math.min(49.9,nx)),Math.max(0.1,Math.min(49.9,ny))];
+    
+    if(this.predatorActive){
+      const[ex,ey]=this.enemyPos,[ax,ay]=this.agentPos;
+      const d=Math.sqrt((ax-ex)**2+(ay-ey)**2)+.01;
+      this.enemyPos=[ex+(ax-ex)/d*.325,ey+(ay-ey)/d*.325];
+    }
+    
+    // MATCH PYTHON METABOLIC DRAIN
+    const baseDrain = 0.02 + (this.maxHealth / 10000.0);
+    const wallPenalty = hitWall ? (this.maxHealth * 0.10) : baseDrain;
+    this.health -= wallPenalty;
     let pBest=Infinity,pi2=0;
     this.poisonPos.forEach(([px,py],i)=>{const d=(px-this.agentPos[0])**2+(py-this.agentPos[1])**2;if(d<pBest){pBest=d;pi2=i}});
     const[poisS,poisD]=nd(this.poisonPos[pi2]);
