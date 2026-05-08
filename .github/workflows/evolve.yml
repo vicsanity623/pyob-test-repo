@@ -2,14 +2,12 @@ name: 🧠 Evolve Brain (Continuous)
 
 on:
   schedule:
-    - cron: '*/80 * * * *'
+    - cron: '0 * * * *'       # Runs exactly at the top of every hour (e.g., 1:00, 2:00)
   workflow_dispatch:          # Manual trigger
 
-# 👇 THIS IS THE FIX 👇
 concurrency:
   group: evolve-brain-loop
-  cancel-in-progress: false   # Prevents a new run from starting until the current one finishes
-# 👆 THIS IS THE FIX 👆
+  cancel-in-progress: false   # Prevents overlap if manually triggered
 
 permissions:
   contents: write             
@@ -18,7 +16,7 @@ permissions:
 jobs:
   evolve:
     runs-on: ubuntu-latest
-    timeout-minutes: 80       
+    timeout-minutes: 60       # Cap job at 1 hour
 
     steps:
       - name: Checkout repo
@@ -34,8 +32,9 @@ jobs:
       - name: Install dependencies
         run: pip install numpy --quiet
 
-      - name: Run headless evolution (1 hour)
-        run: python train_headless.py --minutes 59
+      - name: Run headless evolution (55 minutes)
+        # Runs for 55m, leaving 5 minutes for the server to boot, install, and commit
+        run: python train_headless.py --minutes 55
 
       - name: Commit and Push updated brain
         id: commit_step
@@ -46,23 +45,9 @@ jobs:
           
           if git diff --staged --quiet; then
             echo "No changes to commit."
-            echo "changed=false" >> $GITHUB_OUTPUT
           else
             GEN=$(python -c "import json; d=json.load(open('brain.json')); print(d['meta']['generation'])")
             SCORE=$(python -c "import json; d=json.load(open('brain.json')); print(d['meta']['score'])")
             git commit -m "🧠 gen=${GEN} score=${SCORE} [$(date -u '+%Y-%m-%d %H:%M UTC')]"
             git push
-            echo "changed=true" >> $GITHUB_OUTPUT
           fi
-
-      - name: Reboot Action (Chain Trigger)
-        if: always()
-        run: |
-          echo "Waiting 12 minutes to hit the cycle..."
-          sleep 720 
-          echo "Rebooting..."
-          curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/actions/workflows/evolve.yml/dispatches \
-            -d '{"ref":"main"}'
