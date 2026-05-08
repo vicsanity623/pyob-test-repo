@@ -107,7 +107,7 @@ footer a{color:var(--accent);text-decoration:none}
 
 <footer>
   <a href="https://github.com/vicsanity623/brainSim" target="_blank">github.com/vicsanity623/brainSim</a>
-  &nbsp;·&nbsp; Evolved continuously on GitHub Actions &nbsp;·&nbsp; CTRNN + DeepSeek-style sparse attention
+  &nbsp;·&nbsp; Evolved continuously on GitHub Actions &nbsp;·&nbsp; Async WebWorker + Fixed Timestep
 </footer>
 
 <script>
@@ -117,34 +117,55 @@ const MEMORY_SIZE     = 64;
 const ATTENTION_WIN   = 32;
 const BRAIN_TICK_EVERY= 2;
 const WORLD_SIZE      = 50;
+const PHYSICS_HZ      = 60;
+const TIME_STEP       = 1000 / PHYSICS_HZ;
 
-// ─── CTRNN ───────────────────────────────────────────────────────────────────
+function rand(a,b){return a+Math.random()*(b-a)}
+function randS(m){return (Math.random()-.5)*2*m}
+
+// ─── Web Worker Code (Stringified to run in background thread) ──────────────
+const workerCode = `
+const BRAIN_SIZE = ${BRAIN_SIZE};
+const MEMORY_SIZE = ${MEMORY_SIZE};
+const ATTENTION_WIN = ${ATTENTION_WIN};
+
 class CTRNN {
   constructor(data) {
-    this.size          = data.size || BRAIN_SIZE;
-    this.weights       = data.weights;       // 2D array [size][size]
-    this.biases        = data.biases;        // 1D array
-    this.tauArr        = data.time_constants;
-    this.compressW     = data.compress_weights;  // [MEMORY_SIZE][19]
-    this.attnW         = data.attention_weights; // [size][ATTN_WIN]
-    this.voltages      = new Float64Array(this.size);
-    this.adaptation    = new Float64Array(this.size);
-    this.ltmTrace      = new Float64Array(data.ltm_trace);
-    this.compMem       = new Float64Array(data.compressed_memory);
-    this.lastOutputs   = new Float64Array(this.size).fill(0.5);
-    this.voltHistory   = [];
-    this.thinkingMode  = 0;
-    this._batchedNetIn = null;
+    this.size = data.size || BRAIN_SIZE;
+    this.weights = data.weights;
+    this.biases = data.biases;
+    this.tauArr = data.time_constants;
+    this.compressW = data.compress_weights;
+    this.attnW = data.attention_weights;
+    this.voltages = new Float64Array(this.size);
+    this.adaptation = new Float64Array(this.size);
+    this.ltmTrace = new Float64Array(data.ltm_trace);
+    this.compMem = new Float64Array(data.compressed_memory);
+    this.voltHistory = [];
+    this.thinkingMode = 0;
   }
 
   sigmoid(x){ return 1/(1+Math.exp(-Math.max(-50,Math.min(50,x)))) }
 
-  getOutputs(uncertainty=null){
+  getOutputs(uncertainty){
     if(uncertainty!==null) this.thinkingMode = uncertainty>0.7 ? 1 : 0;
     const out = new Float64Array(this.size);
     for(let n=0;n<this.size;n++){
       const v = Math.max(-50,Math.min(50, this.voltages[n]-this.adaptation[n]*1.5));
-      out[n] = this.sigmoid(v);
+      if(this.thinkingMode === 1) {
+        // Sparse Attention implementation for Worker
+        let attnSum = v;
+        if(this.voltHistory.length > 1) {
+          let score = 0;
+          for(let i=0; i<this.voltHistory.length; i++) {
+             score += this.attnW[n][i % ATTENTION_WIN] * this.voltHistory[i][n];
+          }
+          attnSum = (v + Math.max(-10, Math.min(10, score))) / 2;
+        }
+        out[n] = this.sigmoid(attnSum);
+      } else {
+        out[n] = this.sigmoid(v);
+      }
     }
     return out;
   }
@@ -159,7 +180,6 @@ class CTRNN {
     return this.compMem;
   }
 
-  // Matmul: weights(size×size) × outputs(size) → net(size)
   matmul(outputs){
     const net = new Float64Array(this.size);
     for(let i=0;i<this.size;i++){
@@ -169,26 +189,55 @@ class CTRNN {
     return net;
   }
 
-  tick(dt, sensors, uncertainty=null){
+  tick(dt, sensors, uncertainty){
     const compressed = this.compressSensors(sensors);
-    const outputs    = this.getOutputs(uncertainty);
-    const netIn      = this.matmul(outputs);
+    const outputs = this.getOutputs(uncertainty);
+    const netIn = this.matmul(outputs);
 
     for(let n=0;n<this.size;n++){
       let total = netIn[n]+this.biases[n];
-      if(n<MEMORY_SIZE) total+=compressed[n];
-      if(n<19)          total+=sensors[n];
+      if(n<MEMORY_SIZE) total += compressed[n] * 50.0; // Sensor Gain match Python
+      if(n<19)          total += sensors[n] * 50.0;
       const deriv = (-this.voltages[n]+total)/this.tauArr[n];
       this.voltages[n] = Math.max(-100,Math.min(100, this.voltages[n]+deriv*dt));
       this.adaptation[n]+=(outputs[n]*0.1-this.adaptation[n]*0.05)*dt;
-      this.ltmTrace[n]=this.ltmTrace[n]*0.999+outputs[n]*0.001;
+      this.ltmTrace[n] = this.ltmTrace[n]*0.999 + outputs[n]*0.001;
     }
     this.voltHistory.push(Float64Array.from(this.voltages));
-    if(this.voltHistory.length>ATTENTION_WIN*2) this.voltHistory.shift();
-    this.lastOutputs = outputs;
-    return outputs;
+    if(this.voltHistory.length>ATTENTION_WIN) this.voltHistory.shift();
+    
+    return [outputs[this.size-2], outputs[this.size-1]];
   }
 }
+
+let brain = null;
+self.onmessage = function(e) {
+  if(e.data.type === 'init') {
+    brain = new CTRNN(e.data.brainData);
+    self.postMessage({ type: 'ready' });
+  } else if(e.data.type === 'tick') {
+    if(!brain) return;
+    const motor = brain.tick(0.1, e.data.sensors, e.data.uncertainty);
+    self.postMessage({ type: 'out', motor: motor, thinkingMode: brain.thinkingMode });
+  }
+};
+`;
+
+// Initialize Web Worker
+const blob = new Blob([workerCode], {type: 'application/javascript'});
+const worker = new Worker(URL.createObjectURL(blob));
+
+let workerReady = false;
+let currentMotor = [0.5, 0.5];
+let currentThinkingMode = 0;
+
+worker.onmessage = (e) => {
+  if(e.data.type === 'ready') workerReady = true;
+  if(e.data.type === 'out') {
+    currentMotor = e.data.motor;
+    currentThinkingMode = e.data.thinkingMode;
+  }
+};
 
 // ─── Environment ─────────────────────────────────────────────────────────────
 class Env {
@@ -204,30 +253,26 @@ class Env {
     this.predatorActive=(gen>=500);
     this.lastFoodTime=0;
   }
+
   getSensors(){
     this.foodVisible=(this.ticks%300)<240;
     const nd=(t)=>{const dx=t[0]-this.agentPos[0],dy=t[1]-this.agentPos[1],d=Math.sqrt(dx*dx+dy*dy)+.001;return[[dx/d,dy/d],d]};
     let foodS,foodD;
-    if(hitWall){
-      this.wallContacts++;
-      nx=this.agentPos[0]; ny=this.agentPos[1]; // Kill velocity
-    }
-    this.agentPos=[Math.max(0.1,Math.min(49.9,nx)),Math.max(0.1,Math.min(49.9,ny))];
     
-    if(this.predatorActive){
-      const[ex,ey]=this.enemyPos,[ax,ay]=this.agentPos;
-      const d=Math.sqrt((ax-ex)**2+(ay-ey)**2)+.01;
-      this.enemyPos=[ex+(ax-ex)/d*.325,ey+(ay-ey)/d*.325];
+    if(this.foodVisible){
+      let best=Infinity,bi=0;
+      this.foodPos.forEach(([fx,fy],i)=>{const d=(fx-this.agentPos[0])**2+(fy-this.agentPos[1])**2;if(d<best){best=d;bi=i}});
+      [foodS,foodD]=nd(this.foodPos[bi]);
+      if (foodD < 10) { foodS[0] *= 2.0; foodS[1] *= 2.0; } // Python Sensor Amplification
+    } else {
+      foodS=[0,0]; foodD=50;
     }
-    
-    // MATCH PYTHON METABOLIC DRAIN
-    const baseDrain = 0.02 + (this.maxHealth / 10000.0);
-    const wallPenalty = hitWall ? (this.maxHealth * 0.10) : baseDrain;
-    this.health -= wallPenalty;
+
     let pBest=Infinity,pi2=0;
     this.poisonPos.forEach(([px,py],i)=>{const d=(px-this.agentPos[0])**2+(py-this.agentPos[1])**2;if(d<pBest){pBest=d;pi2=i}});
     const[poisS,poisD]=nd(this.poisonPos[pi2]);
     const[centerS,centerD]=nd([25,25]);
+    
     const fProx=Math.max(0,1-foodD/50), pProx=Math.max(0,1-poisD/50), cProx=Math.max(0,1-centerD/50);
     const[ax,ay]=this.agentPos;
     const wL=ax<10?(10-ax)/10:0, wR=ax>40?(ax-40)/10:0, wT=ay<10?(10-ay)/10:0, wB=ay>40?(ay-40)/10:0;
@@ -235,28 +280,45 @@ class Env {
     const hunger=(100-this.health)/100;
     const osc=Math.sin(this.ticks*.2);
     let enemS=[0,0],eProx=0;
+    
     if(this.predatorActive){const[es,ed]=nd(this.enemyPos);enemS=es;eProx=Math.max(0,1-ed/50)}
     return[foodS[0],foodS[1],poisS[0],poisS[1],wL,wR,wT,wB,hunger,osc,enemS[0],enemS[1],pain,fProx,pProx,centerS[0],centerS[1],cProx,eProx];
   }
+
   update(motor){
     this.ticks++;
-    const dx=(motor[0]-.5)*1.4, dy=(motor[1]-.5)*1.4;
-    let[nx,ny]=[this.agentPos[0]+dx,this.agentPos[1]+dy];
-    const hitWall=(nx<=0||nx>=50||ny<=0||ny>=50);
-    if(hitWall){this.wallContacts++;nx=Math.max(2,Math.min(48,nx));ny=Math.max(2,Math.min(48,ny))}
-    this.agentPos=[Math.max(0,Math.min(50,nx)),Math.max(0,Math.min(50,ny))];
+    let dx=(motor[0]-.5)*1.4, dy=(motor[1]-.5)*1.4;
+    let nx=this.agentPos[0]+dx, ny=this.agentPos[1]+dy;
+    
+    const hitWall=(nx<=0.5||nx>=49.5||ny<=0.5||ny>=49.5);
+    if(hitWall){
+      this.wallContacts++;
+      dx=0; dy=0; // Kill velocity on wall hit
+    }
+    
+    this.agentPos=[
+      Math.max(0.1,Math.min(49.9, this.agentPos[0]+dx)),
+      Math.max(0.1,Math.min(49.9, this.agentPos[1]+dy))
+    ];
+    
     if(this.predatorActive){
       const[ex,ey]=this.enemyPos,[ax,ay]=this.agentPos;
       const d=Math.sqrt((ax-ex)**2+(ay-ey)**2)+.01;
       this.enemyPos=[ex+(ax-ex)/d*.325,ey+(ay-ey)/d*.325];
     }
-    this.health-=(hitWall?1.5:.008);
+    
+    // Metabolic Physics match Python exactly
+    const baseDrain = 0.02 + (this.maxHealth / 10000.0);
+    const wallPenalty = hitWall ? (this.maxHealth * 0.10) : baseDrain;
+    this.health -= wallPenalty;
+
     this.foodPos.forEach(([fx,fy],i)=>{
       if((fx-this.agentPos[0])**2+(fy-this.agentPos[1])**2<6.25){
-        this.health=Math.min(100,this.health+45);this.foodCount++;this.lastFoodTime=this.ticks;
+        this.health=Math.min(100,this.health+45); this.foodCount++; this.lastFoodTime=this.ticks;
         this.foodPos[i]=[rand(7.5,42.5),rand(7.5,42.5)];
       }
     });
+
     this.poisonPos.forEach(([px,py],i)=>{
       this.poisonPos[i][0]+=this.poisonVels[i][0]; this.poisonPos[i][1]+=this.poisonVels[i][1];
       if(this.poisonPos[i][0]<0||this.poisonPos[i][0]>50) this.poisonVels[i][0]*=-1;
@@ -265,17 +327,18 @@ class Env {
         this.health-=70; this.poisonPos[i]=[rand(7.5,42.5),rand(7.5,42.5)];
       }
     });
+
     const predDead=this.predatorActive&&(this.enemyPos[0]-this.agentPos[0])**2+(this.enemyPos[1]-this.agentPos[1])**2<4;
     return this.health>0&&!predDead;
   }
 }
 
-function rand(a,b){return a+Math.random()*(b-a)}
-function randS(m){return (Math.random()-.5)*2*m}
-
 // ─── Simulation state ─────────────────────────────────────────────────────────
-let brain=null, env=null, meta=null;
+let env=null, meta=null;
 let simTick=0, lastFrameTime=performance.now(), fps=0, frameCount=0, fpsTimer=0;
+let accumulator = 0; // Fixed Timestep Accumulator
+
+window._smoothM = [0.5, 0.5];
 
 async function loadBrain(){
   document.getElementById('statusBadge').textContent='Loading…';
@@ -285,7 +348,11 @@ async function loadBrain(){
     if(!r.ok) throw new Error('brain.json not found');
     const d=await r.json();
     meta=d.meta;
-    brain=new CTRNN(d);
+    
+    // Send brain data to Worker
+    workerReady = false;
+    worker.postMessage({ type: 'init', brainData: d });
+
     resetEnv();
     document.getElementById('sGen').textContent=meta.generation.toLocaleString();
     document.getElementById('sScore').textContent=fmtScore(meta.score);
@@ -304,23 +371,41 @@ async function loadBrain(){
 function resetEnv(){
   env=new Env(meta?meta.generation:1, meta?meta.max_health:150);
   simTick=0;
+  window._smoothM = [0.5, 0.5];
+  currentMotor = [0.5, 0.5];
 }
 
 // Auto-refresh brain every 60s
 setInterval(loadBrain,60000);
 document.getElementById('resetBtn').onclick=resetEnv;
 
-// ─── Rendering ────────────────────────────────────────────────────────────────
+// ─── Rendering Optimization: Offscreen Caches ─────────────────────────────────
 const canvas=document.getElementById('world');
 const ctx=canvas.getContext('2d');
 
-function toP(x,y,W,H){return[x/WORLD_SIZE*W,y/WORLD_SIZE*H]}
-
-function drawGlow(ctx,x,y,r,color){
-  const g=ctx.createRadialGradient(x,y,0,x,y,r*3);
-  g.addColorStop(0,color); g.addColorStop(1,'transparent');
-  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r*3,0,Math.PI*2); ctx.fill();
+function createOrbCache(r, color){
+  const c = document.createElement('canvas');
+  const size = r * 6; c.width = size; c.height = size;
+  const cx = c.getContext('2d');
+  const g = cx.createRadialGradient(size/2, size/2, 0, size/2, size/2, r*3);
+  g.addColorStop(0, color); g.addColorStop(1, 'transparent');
+  cx.fillStyle = g; cx.beginPath(); cx.arc(size/2, size/2, r*3, 0, Math.PI*2); cx.fill();
+  return { img: c, offset: size/2 };
 }
+
+const CACHE = {
+  food: createOrbCache(5, 'rgba(0,255,136,0.4)'),
+  poison: createOrbCache(5, 'rgba(255,51,102,0.3)'),
+  predator: createOrbCache(8, 'rgba(255,0,100,0.5)'),
+  agent: createOrbCache(10, 'rgba(0,229,255,0.5)'),
+  aura: createOrbCache(16, 'rgba(192,132,252,0.35)') // Attention visualizer
+};
+
+function drawCached(ctx, cacheObj, x, y){
+  ctx.drawImage(cacheObj.img, x - cacheObj.offset, y - cacheObj.offset);
+}
+
+function toP(x,y,W,H){return[x/WORLD_SIZE*W,y/WORLD_SIZE*H]}
 
 function fmtScore(n){
   if(n>=1e12) return (n/1e12).toFixed(1)+'T';
@@ -330,27 +415,53 @@ function fmtScore(n){
   return String(Math.floor(n));
 }
 
+// ─── Main Game Loop (Fixed Timestep) ──────────────────────────────────────────
 function frame(ts){
   requestAnimationFrame(frame);
-
+  const dt = ts - lastFrameTime;
+  lastFrameTime = ts;
+  
   // FPS counter
-  frameCount++; fpsTimer+=ts-lastFrameTime; lastFrameTime=ts;
+  frameCount++; fpsTimer+=dt;
   if(fpsTimer>=1000){fps=Math.round(frameCount*1000/fpsTimer);frameCount=0;fpsTimer=0;document.getElementById('cFps').textContent=fps}
 
-  if(!brain||!env){ctx.fillStyle='#050508';ctx.fillRect(0,0,canvas.width,canvas.height);return}
-
-  // Step simulation
-  if(simTick%BRAIN_TICK_EVERY===0){
-    const sensors=env.getSensors();
-    const unc= Math.max(0,(100-env.health)/100)*.4 + Math.min(1,env.wallContacts/50)*.3 + ((env.ticks-env.lastFoodTime)>200?.3:0);
-    brain.tick(0.1,sensors,unc);
+  if(!workerReady || !env){
+    ctx.fillStyle='#050508'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    return;
   }
-  let rawM = [brain.lastOutputs[BRAIN_SIZE-2], brain.lastOutputs[BRAIN_SIZE-1]]; if(!window._smoothM) window._smoothM = rawM; window._smoothM = [   0.7 * window._smoothM[0] + 0.3 * rawM[0],   0.7 * window._smoothM[1] + 0.3 * rawM[1] ]; const motor = window._smoothM;
-  const alive=env.update(motor);
+
+  // Fixed Timestep Accumulator (Prevents simulation speedup on 144hz monitors)
+  accumulator += dt;
+  if (accumulator > 200) accumulator = 200; // Prevent spiral of death on tab switch
+  
+  while (accumulator >= TIME_STEP) {
+    stepSimulation();
+    accumulator -= TIME_STEP;
+  }
+
+  renderWorld();
+}
+
+function stepSimulation() {
+  // Async Worker Brain Tick
+  if(simTick % BRAIN_TICK_EVERY === 0){
+    const sensors = env.getSensors();
+    const unc = Math.max(0,(100-env.health)/100)*.4 + Math.min(1,env.wallContacts/50)*.3 + ((env.ticks-env.lastFoodTime)>200?.3:0);
+    worker.postMessage({ type: 'tick', sensors: sensors, uncertainty: unc });
+  }
+  
+  // Smooth the motor response
+  window._smoothM = [
+    0.7 * window._smoothM[0] + 0.3 * currentMotor[0],
+    0.7 * window._smoothM[1] + 0.3 * currentMotor[1]
+  ];
+  
+  const alive = env.update(window._smoothM);
   if(!alive) resetEnv();
   simTick++;
+}
 
-  // Draw world
+function renderWorld() {
   const W=canvas.width, H=canvas.height;
   ctx.fillStyle='#080812'; ctx.fillRect(0,0,W,H);
 
@@ -371,7 +482,7 @@ function frame(ts){
   env.foodPos.forEach(([fx,fy])=>{
     const[px,py]=toP(fx,fy,W,H);
     if(env.foodVisible){
-      drawGlow(ctx,px,py,5,'rgba(0,255,136,0.4)');
+      drawCached(ctx, CACHE.food, px, py);
       ctx.fillStyle='#00ff88'; ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2); ctx.fill();
     } else {
       ctx.strokeStyle='rgba(0,255,136,0.25)'; ctx.lineWidth=1.5;
@@ -382,14 +493,14 @@ function frame(ts){
   // Poison
   env.poisonPos.forEach(([px2,py2])=>{
     const[px,py]=toP(px2,py2,W,H);
-    drawGlow(ctx,px,py,5,'rgba(255,51,102,0.3)');
+    drawCached(ctx, CACHE.poison, px, py);
     ctx.fillStyle='#ff3366'; ctx.fillRect(px-4,py-4,8,8);
   });
 
   // Predator
   if(env.predatorActive){
     const[px,py]=toP(env.enemyPos[0],env.enemyPos[1],W,H);
-    drawGlow(ctx,px,py,8,'rgba(255,0,100,0.5)');
+    drawCached(ctx, CACHE.predator, px, py);
     ctx.fillStyle='#ff0066'; ctx.beginPath(); ctx.arc(px,py,8,0,Math.PI*2); ctx.fill();
     ctx.strokeStyle='rgba(255,0,100,0.8)'; ctx.lineWidth=2;
     ctx.beginPath(); ctx.arc(px,py,12,0,Math.PI*2); ctx.stroke();
@@ -397,18 +508,35 @@ function frame(ts){
 
   // Agent
   const[apx,apy]=toP(ax,ay,W,H);
-  drawGlow(ctx,apx,apy,10,'rgba(0,229,255,0.5)');
+  
+  // Visualizing the "Attention" Aura (System 2 Thinking)
+  if (currentThinkingMode === 1) {
+    const pulse = 1 + 0.15 * Math.sin(performance.now() / 150);
+    ctx.save();
+    ctx.translate(apx, apy); ctx.scale(pulse, pulse);
+    drawCached(ctx, CACHE.aura, 0, 0);
+    ctx.restore();
+
+    // Neural Link line to predator when in danger
+    if (env.predatorActive) {
+      const [px, py] = toP(env.enemyPos[0], env.enemyPos[1], W, H);
+      ctx.strokeStyle = 'rgba(192,132,252,0.4)'; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(apx, apy); ctx.lineTo(px, py); ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
+
+  drawCached(ctx, CACHE.agent, apx, apy);
   ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(apx,apy,7,0,Math.PI*2); ctx.fill();
   ctx.strokeStyle='rgba(0,229,255,0.9)'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.arc(apx,apy,11,0,Math.PI*2); ctx.stroke();
 
-  // Update UI
+  // Update UI Panels
   const hp=env.health, maxHp=env.maxHealth, pct=Math.max(0,hp/maxHp);
   document.getElementById('sHealth').textContent=Math.max(0,Math.floor(hp))+'/'+maxHp;
   document.getElementById('sEaten').textContent=env.foodCount;
   document.getElementById('sSenses').textContent=env.foodVisible?'Active':'Blind';
   document.getElementById('cTick').textContent=simTick.toLocaleString();
-  document.getElementById('cMode').textContent=brain.thinkingMode?'Slow':'Fast';
+  document.getElementById('cMode').textContent=currentThinkingMode?'Slow':'Fast';
   document.getElementById('cPred').textContent=env.predatorActive?'Active':'Inactive';
   const hbar=document.getElementById('hbar');
   hbar.style.width=(pct*100)+'%';

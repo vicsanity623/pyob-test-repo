@@ -13,18 +13,29 @@ import time
 import random
 import json
 import argparse
+import copy
 
 # ==========================================
-# 1. THE BRAIN (CTRNN) - With Stability Governors
+# 1. CONFIGURATION & MAGIC NUMBERS
 # ==========================================
-BRAIN_SIZE = 256         # 2.5x more neurons, ~6x more synapses
-MEMORY_SIZE = 64        # Doubled memory capacity
-ATTENTION_WINDOW = 32   # Wider "memory lookback"
-PLANNING_HORIZON = 8    # Look further ahead
-BRAIN_TICK_EVERY = 2    # Think more often for faster reactions
+BRAIN_SIZE = 256
+MEMORY_SIZE = 64
+ATTENTION_WINDOW = 32
+PLANNING_HORIZON = 8
+BRAIN_TICK_EVERY = 2
 MAX_PLANNERS_PER_TICK = 5
+
+COUNCIL_SIZE = 5          # Number of Top agents to keep (Top-K Elitism)
+FOOD_RADIUS_SQ = 6.25     # 2.5 squared
+POISON_RADIUS_SQ = 4.0    # 2.0 squared
+PREDATOR_RADIUS_SQ = 4.0  # 2.0 squared
+MOTOR_SCALE = 1.4         # Speed multiplier
+
 _plan_budget = [MAX_PLANNERS_PER_TICK]
 
+# ==========================================
+# 2. THE BRAIN (CTRNN)
+# ==========================================
 class ImprovedCTRNN:
     def __init__(self, size=BRAIN_SIZE):
         self.size = size
@@ -149,7 +160,7 @@ class ImprovedCTRNN:
 
 
 # ==========================================
-# 2. THE WORLD ENVIRONMENT (SCALED TO 50x50)
+# 3. THE WORLD ENVIRONMENT (VECTORIZED)
 # ==========================================
 class Environment:
     def __init__(self, king_gen, max_health=150):
@@ -157,11 +168,14 @@ class Environment:
         self.max_health = max_health
         self.agent_pos = np.array([25.0, 25.0])
         self.num_food = 10
-        self.food_positions = [np.random.uniform(7.5, 42.5, 2) for _ in range(self.num_food)]
-        self.food_vels = [np.random.uniform(-0.2, 0.2, 2) if self.gen > 200 else np.zeros(2) for _ in range(self.num_food)]
         self.num_poison = 3
-        self.poison_positions = [np.random.uniform(7.5, 42.5, 2) for _ in range(self.num_poison)]
-        self.poison_vels = [np.random.uniform(-0.15, 0.15, 2) if self.gen > 200 else np.zeros(2) for _ in range(self.num_poison)]
+        
+        # VECTORIZED ARRAYS (Massive performance boost)
+        self.food_positions = np.random.uniform(7.5, 42.5, (self.num_food, 2))
+        self.food_vels = np.random.uniform(-0.2, 0.2, (self.num_food, 2)) if self.gen > 200 else np.zeros((self.num_food, 2))
+        self.poison_positions = np.random.uniform(7.5, 42.5, (self.num_poison, 2))
+        self.poison_vels = np.random.uniform(-0.15, 0.15, (self.num_poison, 2)) if self.gen > 200 else np.zeros((self.num_poison, 2))
+        
         self.enemy_pos = np.array([2.5, 2.5])
         self.health = float(max_health)
         self.food_count = 0
@@ -180,18 +194,19 @@ class Environment:
             return [dx / dist, dy / dist], dist
 
         if self.food_visible:
-            dists_sq = [(f[0]-self.agent_pos[0])**2 + (f[1]-self.agent_pos[1])**2 for f in self.food_positions]
-            # Find the nearest food
+            # Vectorized distance calculation
+            dists_sq = np.sum((self.food_positions - self.agent_pos)**2, axis=1)
             nearest_idx = np.argmin(dists_sq)
             food_s, food_dist = norm_vec_dist(self.food_positions[nearest_idx])
-            # AMPLIFY signal: If food is very close, make the sensor input stronger than 1.0
+            
+            # AMPLIFY signal if close
             if food_dist < 10:
                 food_s[0] *= 2.0
                 food_s[1] *= 2.0
         else:
             food_s, food_dist = [0.0, 0.0], 50.0
 
-        p_dists_sq = [(p[0]-self.agent_pos[0])**2 + (p[1]-self.agent_pos[1])**2 for p in self.poison_positions]
+        p_dists_sq = np.sum((self.poison_positions - self.agent_pos)**2, axis=1)
         pois_s, pois_dist = norm_vec_dist(self.poison_positions[np.argmin(p_dists_sq)])
         center_s, center_dist = norm_vec_dist([25.0, 25.0])
 
@@ -224,108 +239,107 @@ class Environment:
 
     def update(self, motor_output, brain=None):
         self.ticks += 1
-        dx, dy = (motor_output[0]-0.5)*1.4, (motor_output[1]-0.5)*1.4
+        dx, dy = (motor_output[0]-0.5)*MOTOR_SCALE, (motor_output[1]-0.5)*MOTOR_SCALE
         new_pos = self.agent_pos + [dx, dy]
         hit_wall = (new_pos[0]<=0.5 or new_pos[0]>=49.5 or new_pos[1]<=0.5 or new_pos[1]>=49.5)
+        
         if hit_wall:
             self.wall_contact_count += 1
-            # KILL VELOCITY: If they hit a wall, they stop moving for that tick
             dx, dy = 0, 0 
-            # BIGGER PENALTY: Wall hits now cost much more health
-            self.health -= 5.0 
         
         self.agent_pos = np.clip(self.agent_pos + [dx, dy], 0.1, 49.9)
         if np.isnan(self.agent_pos).any():
             self.agent_pos = np.array([25.0, 25.0])
+            
         if self.predator_active:
             dir_e = self.agent_pos - self.enemy_pos
-            dist = np.sqrt(dir_e[0]**2 + dy_e[0]**2) + 0.01 # Fixed typo
+            dist = np.sqrt(dir_e[0]**2 + dir_e[1]**2) + 0.01
             self.enemy_pos += (dir_e / dist) * 0.325
 
-        # 1. Calculate how much health they lose just by being alive
         base_drain = 0.02 + (self.max_health / 10000.0) 
-        
-        # 2. Wall hits now drain 10% of total health (Huge deterrent)
-        if hit_wall:
-            wall_penalty = self.max_health * 0.10
-        else:
-            wall_penalty = base_drain
-            
-        # 3. Apply the health reduction
+        wall_penalty = self.max_health * 0.10 if hit_wall else base_drain
         self.health -= wall_penalty
 
         ate_food = False
-        for i in range(self.num_food):
-            dist_sq = (self.agent_pos[0]-self.food_positions[i][0])**2 + (self.agent_pos[1]-self.food_positions[i][1])**2
-            if dist_sq < 6.25:
-                self.health = min(100, self.health + 45)
-                self.food_count += 1
-                self.last_food_time = self.ticks
-                self.food_positions[i] = np.random.uniform(7.5, 42.5, 2)
-                ate_food = True
-        for i in range(self.num_poison):
-            self.poison_positions[i] += self.poison_vels[i]
-            if self.poison_positions[i][0]<0 or self.poison_positions[i][0]>50: self.poison_vels[i][0]*=-1
-            if self.poison_positions[i][1]<0 or self.poison_positions[i][1]>50: self.poison_vels[i][1]*=-1
-            dist_sq = (self.agent_pos[0]-self.poison_positions[i][0])**2 + (self.agent_pos[1]-self.poison_positions[i][1])**2
-            if dist_sq < 4.0:
-                self.health -= 70
-                self.poison_positions[i] = np.random.uniform(7.5, 42.5, 2)
-        pred_dist_sq = (self.agent_pos[0]-self.enemy_pos[0])**2 + (self.agent_pos[1]-self.enemy_pos[1])**2
-        killed = (self.health <= 0 or (self.predator_active and pred_dist_sq < 4.0))
-        if brain is not None:
-            if self.ticks % BRAIN_TICK_EVERY == 0:
-                uncertainty = 0.0
-                uncertainty += max(0, (100 - self.health) / 100) * 0.4
-                uncertainty += min(1.0, self.wall_contact_count / 50) * 0.3
-                uncertainty += 0.3 if (self.ticks - self.last_food_time) > 200 else 0.0
-                brain.tick(0.1, self.get_sensors(), uncertainty,
-                           use_planning=(uncertainty > 0.6),
-                           precomputed_net_input=getattr(brain, '_batched_net_in', None))
+        
+        # VECTORIZED FOOD COLLISION
+        f_dists_sq = np.sum((self.food_positions - self.agent_pos)**2, axis=1)
+        eaten_mask = f_dists_sq < FOOD_RADIUS_SQ
+        num_eaten = np.sum(eaten_mask)
+        if num_eaten > 0:
+            self.health = min(100, self.health + (45 * num_eaten))
+            self.food_count += num_eaten
+            self.last_food_time = self.ticks
+            self.food_positions[eaten_mask] = np.random.uniform(7.5, 42.5, (num_eaten, 2))
+            ate_food = True
+            
+        # VECTORIZED POISON COLLISION
+        self.poison_positions += self.poison_vels
+        out_of_bounds = (self.poison_positions < 0) | (self.poison_positions > 50)
+        self.poison_vels[out_of_bounds] *= -1
+        
+        p_dists_sq = np.sum((self.poison_positions - self.agent_pos)**2, axis=1)
+        poisoned_mask = p_dists_sq < POISON_RADIUS_SQ
+        num_poisoned = np.sum(poisoned_mask)
+        if num_poisoned > 0:
+            self.health -= 70 * num_poisoned
+            self.poison_positions[poisoned_mask] = np.random.uniform(7.5, 42.5, (num_poisoned, 2))
+            
+        pred_dist_sq = np.sum((self.agent_pos - self.enemy_pos)**2)
+        killed = (self.health <= 0 or (self.predator_active and pred_dist_sq < PREDATOR_RADIUS_SQ))
+        
+        if brain is not None and self.ticks % BRAIN_TICK_EVERY == 0:
+            uncertainty = max(0, (100 - self.health) / 100) * 0.4
+            uncertainty += min(1.0, self.wall_contact_count / 50) * 0.3
+            uncertainty += 0.3 if (self.ticks - self.last_food_time) > 200 else 0.0
+            brain.tick(0.1, self.get_sensors(), uncertainty,
+                       use_planning=(uncertainty > 0.6),
+                       precomputed_net_input=getattr(brain, '_batched_net_in', None))
         return not killed, ate_food
 
 
 # ==========================================
-# 3. MUTATION
+# 4. GENETIC REPRODUCTION & MUTATION
 # ==========================================
+def crossover(b1, b2):
+    """Sexual Reproduction: Splices two brains together"""
+    child = ImprovedCTRNN(b1.size)
+    
+    # Binary crossover for weights and biases
+    w_mask = np.random.rand(*b1.weights.shape) < 0.5
+    child.weights = np.where(w_mask, b1.weights, b2.weights)
+    
+    b_mask = np.random.rand(*b1.biases.shape) < 0.5
+    child.biases = np.where(b_mask, b1.biases, b2.biases)
+    
+    tc_mask = np.random.rand(*b1.time_constants.shape) < 0.5
+    child.time_constants = np.where(tc_mask, b1.time_constants, b2.time_constants)
+    
+    # Pass down Attention and Compression intact to prevent breaking deep circuits
+    child.compress_weights = b1.compress_weights.copy() if random.random() < 0.5 else b2.compress_weights.copy()
+    child.attention_weights = b1.attention_weights.copy() if random.random() < 0.5 else b2.attention_weights.copy()
+    
+    return child
+
 def deepseek_style_mutate(brain):
+    """Asexual Reproduction: Adds noise to existing brain"""
     nb = ImprovedCTRNN(brain.size)
     
-    # Occasionally do a "Heavy Mutation" to jump out of local minimums
     mutation_rate = 0.2 if np.random.rand() < 0.05 else 0.05
     mask = np.random.rand(*brain.weights.shape) < mutation_rate
+    nb.weights = np.clip(brain.weights * 0.995 + np.random.normal(0, 0.15, brain.weights.shape) * mask, -3.0, 3.0)
     
-    nb.weights = np.clip(
-        brain.weights * 0.995 + np.random.normal(0, 0.15, brain.weights.shape) * mask,
-        -3.0, 3.0
-    )
-    
-    # MUTATE TIME CONSTANTS: Allows the "rhythm" of the brain to evolve
     tc_mask = np.random.rand(brain.size) < 0.1
-    nb.time_constants = np.clip(
-        brain.time_constants + np.random.normal(0, 0.2, brain.size) * tc_mask,
-        1.0, 15.0
-    )
+    nb.time_constants = np.clip(brain.time_constants + np.random.normal(0, 0.2, brain.size) * tc_mask, 1.0, 15.0)
 
     if np.random.rand() < 0.1:
-        nb.compress_weights = np.clip(
-            brain.compress_weights + np.random.normal(0, 0.1, brain.compress_weights.shape),
-            -1, 1
-        )
+        nb.compress_weights = np.clip(brain.compress_weights + np.random.normal(0, 0.1, brain.compress_weights.shape), -1, 1)
     
-    # MUTATE ATTENTION: Evolve how the brain looks at its own past
     if np.random.rand() < 0.15:
-        nb.attention_weights = np.clip(
-            brain.attention_weights + np.random.normal(0, 0.05, brain.attention_weights.shape),
-            -1, 1
-        )
+        nb.attention_weights = np.clip(brain.attention_weights + np.random.normal(0, 0.05, brain.attention_weights.shape), -1, 1)
         
-    # PRECISE BIAS MUTATION
     bias_mask = np.random.rand(*brain.biases.shape) < 0.1
-    nb.biases = np.clip(
-        brain.biases * 0.99 + np.random.normal(0, 0.05, brain.biases.shape) * bias_mask,
-        -1.5, 1.5
-    )
+    nb.biases = np.clip(brain.biases * 0.99 + np.random.normal(0, 0.05, brain.biases.shape) * bias_mask, -1.5, 1.5)
     
     nb.ltm_trace = brain.ltm_trace.copy()
     nb.compressed_memory = brain.compressed_memory.copy()
@@ -333,104 +347,122 @@ def deepseek_style_mutate(brain):
 
 
 # ==========================================
-# 4. SAVE + EXPORT
+# 5. SAVE + EXPORT
 # ==========================================
 SAVE_FILE = "evolved_core_brain.pkl"
 
-def save_and_export(brain, score, gen, food, max_health):
-    # Save pickle (continuity for next run)
-    with open(SAVE_FILE, "wb") as f:
-        pickle.dump({'brain': brain, 'score': score, 'generation': gen,
-                     'food': food, 'max_health': max_health}, f)
-    print(f"[+] Saved {SAVE_FILE}")
+def save_and_export(council, gen, max_health):
+    # Sort council just in case, best is at the end [-1]
+    council.sort(key=lambda x: x[0])
+    best_score, best_brain = council[-1]
+    best_food = getattr(best_brain, '_last_food_score', 0)
 
-    # Export JSON for browser viewer
+    with open(SAVE_FILE, "wb") as f:
+        pickle.dump({'council': council, 'generation': gen, 'max_health': max_health}, f)
+    print(f"[+] Saved {SAVE_FILE} (Council Size: {len(council)})")
+
+    # Export JSON of ONLY the absolute best agent for browser viewer
     data = {
         "meta": {
-            "score": int(score),
+            "score": int(best_score),
             "generation": gen,
-            "food": food,
+            "food": best_food,
             "max_health": max_health,
-            "brain_size": brain.size,
+            "brain_size": best_brain.size,
             "exported_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         },
-        "weights": brain.weights.tolist(),
-        "biases": brain.biases.tolist(),
-        "time_constants": brain.time_constants.tolist(),
-        "compress_weights": brain.compress_weights.tolist(),
-        "attention_weights": brain.attention_weights.tolist(),
-        "ltm_trace": brain.ltm_trace.tolist(),
-        "compressed_memory": brain.compressed_memory.tolist(),
+        "weights": best_brain.weights.tolist(),
+        "biases": best_brain.biases.tolist(),
+        "time_constants": best_brain.time_constants.tolist(),
+        "compress_weights": best_brain.compress_weights.tolist(),
+        "attention_weights": best_brain.attention_weights.tolist(),
+        "ltm_trace": best_brain.ltm_trace.tolist(),
+        "compressed_memory": best_brain.compressed_memory.tolist(),
     }
     with open("brain.json", "w") as f:
-        json.dump(data, f, separators=(',', ':'))  # compact — no extra whitespace
-    print(f"[+] Exported brain.json  (gen={gen}, score={int(score)}, food={food})")
+        json.dump(data, f, separators=(',', ':'))
+    print(f"[+] Exported brain.json (gen={gen}, score={int(best_score)})")
 
 
 # ==========================================
-# 5. MAIN EVOLUTION LOOP
+# 6. MAIN EVOLUTION LOOP
 # ==========================================
 COLS, ROWS = 10, 10
 NUM_AGENTS = COLS * ROWS
 
 def main():
     parser = argparse.ArgumentParser(description="Headless CTRNN evolution trainer")
-    parser.add_argument("--minutes", type=int, default=390,
-                        help="Wall-clock minutes to run (default: 390 = 6.5 h)")
+    parser.add_argument("--minutes", type=int, default=390, help="Wall-clock minutes to run")
     args = parser.parse_args()
 
     deadline = time.time() + args.minutes * 60
-    next_log = time.time() + 60        # Log every 60 s
-    next_save = time.time() + 1800     # Save checkpoint every 30 min
+    next_log = time.time() + 60
+    next_save = time.time() + 1800
 
-    # Load existing brain (continuity) or start fresh
+    # Load existing Council (Top-K Elitism) or start fresh
     if os.path.exists(SAVE_FILE):
         with open(SAVE_FILE, "rb") as f:
             data = pickle.load(f)
-        k_brain = data['brain']
-        k_score = data.get('score', 0)
-        k_gen   = data.get('generation', 1)
-        k_food  = data.get('food', 0)
+        
+        k_gen = data.get('generation', 1)
         k_max_health = data.get('max_health', 150)
-
-        wrong_size = getattr(k_brain, 'size', 0) != BRAIN_SIZE
-        wrong_attn = getattr(k_brain, 'attention_weights', np.zeros((1,1))).shape != (BRAIN_SIZE, ATTENTION_WINDOW)
-        if wrong_size or wrong_attn:
-            print("[!] Brain architecture mismatch — starting fresh.")
-            k_brain, k_score, k_gen, k_food, k_max_health = ImprovedCTRNN(BRAIN_SIZE), 0, 1, 0, 150
+        
+        # Backwards compatibility check
+        if 'council' in data:
+            council = data['council']
         else:
-            print(f"[+] Loaded brain: gen={k_gen}, score={int(k_score)}, food={k_food}, maxHP={k_max_health}")
+            print("[*] Upgrading old save file to Council System...")
+            k_brain = data['brain']
+            k_score = data.get('score', 0)
+            # Create a fake initial council out of the single saved brain
+            council = [(k_score * (0.95 ** i), copy.deepcopy(k_brain)) for i in range(COUNCIL_SIZE)]
+            council.sort(key=lambda x: x[0])
+            
+        print(f"[+] Loaded Council. Best Score: {int(council[-1][0])}, Gen: {k_gen}")
     else:
         print("[+] No saved brain found — starting fresh evolution.")
-        k_brain, k_score, k_gen, k_food, k_max_health = ImprovedCTRNN(BRAIN_SIZE), 0, 1, 0, 150
+        k_gen, k_max_health = 1, 150
+        base_brain = ImprovedCTRNN(BRAIN_SIZE)
+        council = [(0, copy.deepcopy(base_brain)) for _ in range(COUNCIL_SIZE)]
 
-    brains = [k_brain] + [deepseek_style_mutate(k_brain) for _ in range(NUM_AGENTS - 1)]
-    envs   = [Environment(k_gen, k_max_health) for _ in range(NUM_AGENTS)]
+    # Generate initial population based on the council
+    brains = []
+    for _ in range(NUM_AGENTS):
+        b1, b2 = random.choice(council)[1], random.choice(council)[1]
+        child = crossover(b1, b2)
+        brains.append(deepseek_style_mutate(child))
+        
+    envs = [Environment(k_gen, k_max_health) for _ in range(NUM_AGENTS)]
 
     steps_total = 0
+    deaths_this_run = 0
     cycles_this_run = 0
 
-    print(f"[*] Running headless evolution for {args.minutes} min ({NUM_AGENTS} agents, max speed)...")
+    print(f"[*] Running headless evolution for {args.minutes} min ({NUM_AGENTS} agents, vectorized physics)...")
 
     while time.time() < deadline:
-        # Reset planning budget each step
         _plan_budget[0] = MAX_PLANNERS_PER_TICK
 
-        # 1. High-speed Batch Math (Calculates all 100 brains at once on the CPU)
+        # 1. High-speed Batch Math
         all_w = np.array([b.weights for b in brains])
         all_o = np.array([b._last_outputs for b in brains])
         all_net_in = np.matmul(all_w, all_o[..., np.newaxis]).squeeze(-1)
 
-        # 2. Combined Agent Loop (Logic and Physics)
+        # 2. Combined Agent Loop
         for i in range(NUM_AGENTS):
-            # Pass the batch math result to this specific brain
             brains[i]._batched_net_in = all_net_in[i]
-            
-            # Use smoothed motor for movement
             motor_to_use = getattr(brains[i], '_prev_motor', brains[i]._last_outputs[-2:])
+            
             alive, _ = envs[i].update(motor_to_use, brain=brains[i])
             
             if not alive:
+                deaths_this_run += 1
+                
+                # --- Periodic Score Decay (Once per full population wipe) ---
+                if deaths_this_run % NUM_AGENTS == 0:
+                    for idx in range(len(council)):
+                        council[idx] = (council[idx][0] * 0.995, council[idx][1]) # Decay 0.5%
+                
                 # --- Scoring Logic ---
                 dx_c = envs[i].agent_pos[0] - 25.0
                 dy_c = envs[i].agent_pos[1] - 25.0
@@ -438,48 +470,61 @@ def main():
                 center_bonus = max(0, (25.0 - dist_from_center) * 2.0)
                 
                 score = (envs[i].ticks * 0.1) + (envs[i].food_count * 8000) + center_bonus - (envs[i].wall_contact_count * 200)
-                
                 if envs[i].food_count == 0:
                     score = min(score, 10) 
                 
-                # --- Success or Decay ---
-                if score > k_score:
-                    k_score, k_gen, k_food = score, k_gen + 1, envs[i].food_count
-                    k_max_health = min(500, k_max_health + 3)
-                    brains[0] = brains[i]
-                    cycles_this_run += 1
-                else:
-                    k_score *= 0.9999
+                # Store food stat for web viewer
+                brains[i]._last_food_score = envs[i].food_count
                 
-                # --- Respawn / Diversity ---
-                if i < (NUM_AGENTS * 0.9):
-                    brains[i] = deepseek_style_mutate(brains[0])
+                # --- Top-K Elitism (The Council) ---
+                lowest_council_score = council[0][0]
+                if score > lowest_council_score:
+                    council[0] = (score, copy.deepcopy(brains[i]))
+                    council.sort(key=lambda x: x[0]) # Re-sort so [0] is lowest, [-1] is highest
+                    
+                    k_gen += 1
+                    k_max_health = min(500, k_max_health + 3)
+                    cycles_this_run += 1
+                
+                # --- Advanced Reproduction (Crossover + Mutate) ---
+                r = np.random.rand()
+                if r < 0.70:
+                    # 70%: Sexual Reproduction (Cross two council members + Mutate)
+                    b1 = random.choice(council)[1]
+                    b2 = random.choice(council)[1]
+                    child = crossover(b1, b2)
+                    brains[i] = deepseek_style_mutate(child)
+                elif r < 0.90:
+                    # 20%: Asexual Reproduction (Direct clone of absolute best + Mutate)
+                    brains[i] = deepseek_style_mutate(council[-1][1])
                 else:
+                    # 10%: Random Immigrant (Pure diversity)
                     brains[i] = ImprovedCTRNN(BRAIN_SIZE) 
                 
                 envs[i] = Environment(k_gen, k_max_health)
 
         steps_total += 1
 
-        # Periodic stdout log (visible in Actions log)
+        # Periodic Logging
         now = time.time()
         if now >= next_log:
             elapsed_min = (now - (deadline - args.minutes * 60)) / 60
             remaining_min = (deadline - now) / 60
+            best_score = int(council[-1][0])
             print(f"[{elapsed_min:5.1f}m elapsed | {remaining_min:5.1f}m left] "
-                  f"Cycle={k_gen} Score={int(k_score)} Food={k_food} MaxHP={k_max_health} "
+                  f"Cycle={k_gen} BestScore={best_score} MaxHP={k_max_health} "
                   f"Steps={steps_total:,} NewKings={cycles_this_run}")
             next_log = now + 60
 
-        # Mid-run checkpoint save (in case Action is cancelled)
+        # Checkpoint Save
         if now >= next_save:
             print("[~] Checkpoint save...")
-            save_and_export(brains[0], k_score, k_gen, k_food, k_max_health)
+            save_and_export(council, k_gen, k_max_health)
             next_save = now + 1800
 
-    # Final save
+    # Final Save
     print(f"\n[+] Run complete. Total steps: {steps_total:,} | New kings this run: {cycles_this_run}")
-    save_and_export(brains[0], k_score, k_gen, k_food, k_max_health)
+    save_and_export(council, k_gen, k_max_health)
 
 
 if __name__ == "__main__":
