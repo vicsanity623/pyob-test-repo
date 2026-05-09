@@ -106,7 +106,7 @@ class ImprovedCTRNN:
             outputs = 1.0 / (1.0 + np.exp(-attended))
         return outputs
 
-    def forward_plan(self, env_copy_func, steps=PLANNING_HORIZON):
+    def forward_plan(self, steps=PLANNING_HORIZON):
         plans = []
         current_state = self.voltages.copy()
         original_mode = self.thinking_mode
