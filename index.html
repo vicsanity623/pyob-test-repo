@@ -244,7 +244,8 @@ self.onmessage = function(e) {
         outMotors.push([0.5,0.5]); outModes.push(0);
         continue;
       }
-      let m = brains[i].tick(0.1, e.data.agents[i].sensors, e.data.agents[i].unc);
+      // Use the dt provided by the main thread
+      let m = brains[i].tick(e.data.dt, e.data.agents[i].sensors, e.data.agents[i].unc);
       outMotors.push(m);
       outModes.push(brains[i].thinkingMode);
     }
@@ -510,7 +511,9 @@ function frame(ts){
         const unc = Math.max(0,(village.maxHealth-a.health)/village.maxHealth)*.4 + Math.min(1,a.wallHits/50)*.3 + ((village.ticks-a.lastFoodTime)>200?.3:0);
         payload.push({dead:false, sensors: village.getSensorsFor(a), unc: unc});
       }
-      worker.postMessage({ type: 'tick', agents: payload });
+      // Calculate dt for brain tick, assuming CTRNN time constants are in milliseconds
+      const brainDt = TIME_STEP * BRAIN_TICK_EVERY;
+      worker.postMessage({ type: 'tick', agents: payload, dt: brainDt });
     }
     simTick++;
     accumulator -= TIME_STEP;
