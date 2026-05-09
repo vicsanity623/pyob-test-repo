@@ -108,21 +108,27 @@ class ImprovedCTRNN:
         current_state = self.voltages.copy()
         original_mode = self.thinking_mode
         self.thinking_mode = 0
+        
         for action_variation in np.linspace(-0.5, 0.5, 3):
             sim_voltages = current_state.copy()
             total_reward = 0
+            
             for step in range(steps):
                 self.voltages = sim_voltages
-                # Consolidate the assignment to use the slice directly
-                motor = self.get_outputs()[-2:] + action_variation
+                outputs = self.get_outputs()
+                motor = outputs[-2:] + action_variation
                 
-                # If you need to use 'motor' for reward calculation, do it here. 
-                total_reward += np.random.randn() * 0.1
-                
-                sim_derivative = (-sim_voltages + self.biases) / self.time_constants
+                # THE BOT'S FIX (Perfected): Simulate the ACTUAL brain physics, not just biases
+                sim_derivative = (-sim_voltages + np.dot(self.weights, outputs) + self.biases) / self.time_constants
                 sim_voltages = sim_voltages + sim_derivative * 0.1
-                self.voltages = current_state
+                
+                # Reward the brain for maintaining high internal variance (active thinking) 
+                # rather than just rolling a random number
+                total_reward += np.std(outputs) 
+                
+            self.voltages = current_state
             plans.append((action_variation, total_reward))
+            
         self.thinking_mode = original_mode
         best_action = max(plans, key=lambda x: x[1])[0]
         return best_action
