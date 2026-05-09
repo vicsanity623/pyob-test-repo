@@ -117,7 +117,7 @@ let WORLD_SIZE        = 250;
 function rand(a,b){return a+Math.random()*(b-a)}
 function randS(m){return (Math.random()-.5)*2*m}
 
-// ─── Web Worker Code (Handles infinite array of brains) ─────────────────────
+// ─── Web Worker Code (Handles multiple independent brains) ─────────────────────
 const workerCode = `
 const BRAIN_SIZE = ${BRAIN_SIZE};
 const MEMORY_SIZE = ${MEMORY_SIZE};
@@ -137,48 +137,43 @@ class CTRNN {
     this.compMem = new Float64Array(data.compressed_memory || MEMORY_SIZE);
     this.voltHistory = [];
     this.thinkingMode = 0;
+    this._prevMotor = [0.5, 0.5];
   }
 
   cloneAndMutate() {
-    let w = [];
-    for(let r=0; r<this.size; r++) {
-      let row = [];
-      for(let c=0; c<this.size; c++) row.push(this.weights[r][c] + (Math.random()-0.5)*0.05);
-      w.push(row);
-    }
-    let b = [];
-    for(let i=0; i<this.size; i++) b.push(this.biases[i] + (Math.random()-0.5)*0.05);
+    // Match Python deepseek_style_mutate more closely
+    let w = this.weights.map(row => row.map(v => Math.max(-3, Math.min(3, v * 0.995 + (Math.random()-0.5)*0.3))));
+    let b = this.biases.map(v => Math.max(-1.5, Math.min(1.5, v * 0.99 + (Math.random()-0.5)*0.1)));
+    let tau = this.tauArr.map(t => Math.max(1.0, Math.min(15.0, t + (Math.random()-0.5)*0.4)));
     
     return new CTRNN({
       size: this.size,
       weights: w,
       biases: b,
-      time_constants: this.tauArr.map(t => Math.max(0.01, t + (Math.random()-0.5)*0.05)), // Mutate time constants, ensuring positivity
+      time_constants: tau,
       compress_weights: this.compressW.map(r => r.slice()),
-      attention_weights: this.attnW.map(r => r.slice())
+      attention_weights: this.attnW.map(r => r.slice()),
+      ltm_trace: this.ltmTrace.slice(),
+      compressed_memory: this.compMem.slice()
     });
   }
 
   sigmoid(x){ return 1/(1+Math.exp(-Math.max(-50,Math.min(50,x)))) }
 
   getOutputs(uncertainty){
-    if(uncertainty!==null) this.thinkingMode = uncertainty>0.7 ? 1 : 0;
+    if(uncertainty!==null && uncertainty!==undefined) this.thinkingMode = uncertainty>0.7 ? 1 : 0;
     const out = new Float64Array(this.size);
     for(let n=0;n<this.size;n++){
       const v = Math.max(-50,Math.min(50, this.voltages[n]-this.adaptation[n]*1.5));
-      if(this.thinkingMode === 1) {
-        let attnSum = v;
-        if(this.voltHistory.length > 1) {
-          let score = 0;
-          for(let i=0; i<this.voltHistory.length; i++) {
-             score += this.attnW[n][i % ATTENTION_WIN] * this.voltHistory[i][n];
-          }
-          attnSum = (v + Math.max(-10, Math.min(10, score))) / 2;
+      let val = v;
+      if(this.thinkingMode === 1 && this.voltHistory.length > 1) {
+        let score = 0;
+        for(let i=0; i<Math.min(this.voltHistory.length, ATTENTION_WIN); i++) {
+          score += this.attnW[n][i % ATTENTION_WIN] * this.voltHistory[i][n];
         }
-        out[n] = this.sigmoid(attnSum);
-      } else {
-        out[n] = this.sigmoid(v);
+        val = (v + Math.max(-10, Math.min(10, score))) * 0.5;
       }
+      out[n] = this.sigmoid(val);
     }
     return out;
   }
@@ -217,34 +212,32 @@ class CTRNN {
       this.ltmTrace[n] = this.ltmTrace[n]*0.999 + outputs[n]*0.001;
     }
     this.voltHistory.push(Float64Array.from(this.voltages));
-    if(this.voltHistory.length>ATTENTION_WIN) this.voltHistory.shift();
+    if(this.voltHistory.length>ATTENTION_WIN*2) this.voltHistory.shift();
     
-    return [outputs[this.size-2], outputs[this.size-1]];
+    const motor = outputs.slice(-2);
+    this._prevMotor = [0.7*this._prevMotor[0] + 0.3*motor[0], 0.7*this._prevMotor[1] + 0.3*motor[1]];
+    return this._prevMotor;
   }
 }
 
 let brains = [];
 self.onmessage = function(e) {
   if(e.data.type === 'init') {
-    // Completely wipe and reset the worker memory when the world resets
     brains = [new CTRNN(e.data.brainData)];
     self.postMessage({ type: 'ready' });
   } else if (e.data.type === 'spawn') {
     let parent = brains[e.data.parentId];
-    brains.push(parent.cloneAndMutate());
+    if(parent) brains.push(parent.cloneAndMutate());
   } else if (e.data.type === 'kill') {
-    brains[e.data.id] = null; 
+    if(e.data.id < brains.length) brains[e.data.id] = null; 
   } else if (e.data.type === 'tick') {
     let outMotors = [];
     let outModes = [];
-    
-    // SAFETY FIX: Only iterate over the number of agents the Main Thread sent
     for(let i=0; i<e.data.agents.length; i++) {
       if(!brains[i] || e.data.agents[i].dead) {
         outMotors.push([0.5,0.5]); outModes.push(0);
         continue;
       }
-      // Use the dt provided by the main thread
       let m = brains[i].tick(e.data.dt, e.data.agents[i].sensors, e.data.agents[i].unc);
       outMotors.push(m);
       outModes.push(brains[i].thinkingMode);
@@ -258,7 +251,7 @@ const blob = new Blob([workerCode], {type: 'application/javascript'});
 const worker = new Worker(URL.createObjectURL(blob));
 let workerReady = false;
 
-// ─── Environment (The Village) ───────────────────────────────────────────────
+// ─── Environment (Multi-Agent Village) ───────────────────────────────────────
 class Village {
   constructor(gen, maxHealth){
     this.gen=gen; this.maxHealth=maxHealth;
@@ -316,8 +309,8 @@ class Village {
   updatePhysics(motors, modes){
     this.ticks++;
     let anyAlive = false;
+    let aliveCountThisTick = 0;
 
-    // Predator Logic
     if(this.predatorActive){
         let closest = Infinity, target = null;
         for(let a of this.agents) {
@@ -335,18 +328,17 @@ class Village {
         this.enemyPos = [Math.max(5,Math.min(WORLD_SIZE-5,this.enemyPos[0])), Math.max(5,Math.min(WORLD_SIZE-5,this.enemyPos[1]))];
     }
 
-    // Poison
     this.poisonPos.forEach(([px,py],i)=>{
       this.poisonPos[i][0]+=this.poisonVels[i][0]; this.poisonPos[i][1]+=this.poisonVels[i][1];
       if(this.poisonPos[i][0]<0||this.poisonPos[i][0]>WORLD_SIZE) this.poisonVels[i][0]*=-1;
       if(this.poisonPos[i][1]<0||this.poisonPos[i][1]>WORLD_SIZE) this.poisonVels[i][1]*=-1;
     });
 
-    // Agent Physics
     for(let i=0; i<this.agents.length; i++) {
         let a = this.agents[i];
         if(a.dead) continue;
         anyAlive = true;
+        aliveCountThisTick++;
         
         a.smoothM = [ 0.7*a.smoothM[0] + 0.3*motors[i][0], 0.7*a.smoothM[1] + 0.3*motors[i][1] ];
         a.mode = modes[i];
@@ -363,7 +355,6 @@ class Village {
         const baseDrain = 0.02 + (this.maxHealth / 10000.0);
         a.health -= baseDrain;
 
-        // In-Life Reproduction
         if(a.ticks > 0 && a.ticks % 1800 === 0) {
             a.health = Math.min(this.maxHealth, a.health + 100);
             worker.postMessage({ type: 'spawn', parentId: i });
@@ -376,7 +367,6 @@ class Village {
         }
         a.ticks++;
 
-        // Food/Poison
         this.foodPos.forEach(([fx,fy],fi)=>{
           if((fx-a.pos[0])**2+(fy-a.pos[1])**2<16){
             a.health=Math.min(this.maxHealth, a.health+45); this.globalFoodEaten++; a.lastFoodTime=this.ticks;
@@ -396,7 +386,7 @@ class Village {
             worker.postMessage({ type: 'kill', id: i });
         }
     }
-    return anyAlive;
+    return {anyAlive, aliveCount: aliveCountThisTick};
   }
 }
 
@@ -408,8 +398,8 @@ let accumulator = 0;
 worker.onmessage = (e) => {
   if(e.data.type === 'ready') workerReady = true;
   if(e.data.type === 'out') {
-    const alive = village.updatePhysics(e.data.motors, e.data.modes);
-    if(!alive) resetEnv(); 
+    const result = village.updatePhysics(e.data.motors, e.data.modes);
+    if(!result.anyAlive) resetEnv(); 
   }
 };
 
@@ -421,7 +411,7 @@ async function loadBrain(){
     if(!r.ok) throw new Error('brain.json not found');
     const d=await r.json();
     meta=d.meta;
-    rawBrainData = d; // Store for clean resets
+    rawBrainData = d;
     if(meta.world_size) WORLD_SIZE = meta.world_size;
     
     workerReady = false;
@@ -429,7 +419,6 @@ async function loadBrain(){
 
     resetEnv();
     
-    // UI UPDATES (Fixed null error by removing sBrainSz)
     document.getElementById('sGen').textContent=meta.generation.toLocaleString();
     document.getElementById('sScore').textContent=fmtScore(meta.score);
     document.getElementById('sFood').textContent=meta.food;
@@ -448,7 +437,6 @@ async function loadBrain(){
 function resetEnv(){
   village=new Village(meta?meta.generation:1, meta?meta.max_health:150);
   simTick=0;
-  // FIX: Wipe the worker's ghost village and start fresh to prevent idle bugs
   if (workerReady && rawBrainData) {
     worker.postMessage({ type: 'init', brainData: rawBrainData });
   }
@@ -508,11 +496,14 @@ function frame(ts){
       let payload = [];
       for(let a of village.agents) {
         if(a.dead) { payload.push({dead:true}); continue; }
-        const unc = Math.max(0,(village.maxHealth-a.health)/village.maxHealth)*.4 + Math.min(1,a.wallHits/50)*.3 + ((village.ticks-a.lastFoodTime)>200?.3:0);
+        const unc = Math.max(0,(village.maxHealth-a.health)/village.maxHealth)*.4 + Math.min(1,a.wallHits/50)*.3 + ((village.ticks-a.lastFoodTime)>200?0.3:0);
+        if(village.predatorActive){
+          const pd = Math.hypot(a.pos[0]-village.enemyPos[0], a.pos[1]-village.enemyPos[1]);
+          if(pd < 80) unc += 0.5;
+        }
         payload.push({dead:false, sensors: village.getSensorsFor(a), unc: unc});
       }
-      // Calculate dt for brain tick, assuming CTRNN time constants are in milliseconds
-      const brainDt = TIME_STEP * BRAIN_TICK_EVERY;
+      const brainDt = TIME_STEP * BRAIN_TICK_EVERY / 10; // Match Python dt scaling
       worker.postMessage({ type: 'tick', agents: payload, dt: brainDt });
     }
     simTick++;
