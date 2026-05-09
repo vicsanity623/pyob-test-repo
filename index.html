@@ -162,7 +162,7 @@ class CTRNN {
   sigmoid(x){ return 1/(1+Math.exp(-Math.max(-50,Math.min(50,x)))) }
 
   getOutputs(uncertainty){
-    if(uncertainty!==null) this.thinkingMode = uncertainty>0.7 ? 1 : 0;
+    this.thinkingMode = uncertainty>0.7 ? 1 : 0;
     const out = new Float64Array(this.size);
     for(let n=0;n<this.size;n++){
       const v = Math.max(-50,Math.min(50, this.voltages[n]-this.adaptation[n]*1.5));
