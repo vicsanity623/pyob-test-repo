@@ -157,11 +157,6 @@ class ImprovedCTRNN:
         sensor_gain = 50.0
         inject_size = min(self.size, len(compressed))
         total_input[:inject_size] += compressed[:inject_size] * sensor_gain
-        if sensors is not None:
-            sensor_inject_size = min(self.size, len(sensors))
-            total_input[:sensor_inject_size] += (
-                sensors[:sensor_inject_size] * sensor_gain
-            )
         derivative = (-self.voltages + total_input) / self.time_constants
         self.voltages = np.clip(self.voltages + derivative * dt, -100, 100)
         self.adaptation += (outputs * 0.1 - self.adaptation * 0.05) * dt
