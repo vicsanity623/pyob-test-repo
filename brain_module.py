@@ -38,7 +38,7 @@ class ImprovedCTRNN:
         if len(history) < 32:
             history = [np.zeros(self.size)] * (32 - len(history)) + history
         history_matrix = np.array(history).T
-        scores = self.attention_weights * history_matrix
+        scores = np.dot(self.attention_weights.T, history_matrix)
         scores = np.clip(scores, -10, 10)
         threshold = np.mean(np.abs(scores), axis=1, keepdims=True) * 1.5
         scores[np.abs(scores) < threshold] = -20
