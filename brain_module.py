@@ -65,11 +65,12 @@ class ImprovedCTRNN:
     ):
         compressed = self.compress_sensors(sensors)
         outputs = self.get_outputs(uncertainty)
-        network_input = (
-            precomputed_net_input + self.biases
+        net_in = (
+            precomputed_net_input
             if precomputed_net_input is not None
-            else np.dot(self.weights, outputs) + self.biases
+            else np.dot(self.weights, outputs)
         )
+        network_input = net_in + self.biases
         total_input = np.array(network_input, copy=True)
         total_input[: min(self.size, 64)] += compressed[: min(self.size, 64)] * 50.0
         if sensors is not None:
