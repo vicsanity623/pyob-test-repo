@@ -405,7 +405,7 @@ let accumulator = 0;
 
 worker.onmessage = (e) => {
   if(e.data.type === 'ready') workerReady = true;
-  if(e.data.type === 'out') {
+  if(e.data.type === 'out' && workerReady) {
     const result = village.updatePhysics(e.data.motors, e.data.modes);
     if(!result.anyAlive) resetEnv(); 
   }
