@@ -374,8 +374,6 @@ class Village {
             a._alreadyReproduced = true;  // Prevent multiple spawns from same agent
         }
         a.ticks++;
-    }
-    this.agents.push(...spawned);
 
         this.foodPos.forEach(([fx,fy],fi)=>{
           if((fx-a.pos[0])**2+(fy-a.pos[1])**2<16){
@@ -396,6 +394,7 @@ class Village {
             worker.postMessage({ type: 'kill', id: i });
         }
     }
+    this.agents.push(...spawned);
     return {anyAlive, aliveCount: aliveCountThisTick};
   }
 }
