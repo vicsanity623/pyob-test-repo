@@ -69,6 +69,9 @@ class ImprovedCTRNN:
         use_planning=False,
         precomputed_net_input=None,
     ):
+        self.voltage_history.append(self.voltages.copy())
+        if len(self.voltage_history) > 64:
+            self.voltage_history = self.voltage_history[-64:]
         compressed = self.compress_sensors(sensors)
         outputs = self.get_outputs(uncertainty)
         net_in = (
