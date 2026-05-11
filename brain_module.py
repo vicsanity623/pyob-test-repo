@@ -44,7 +44,7 @@ class ImprovedCTRNN:
         scores[np.abs(scores) < threshold] = -20
         exp_scores = np.exp(scores - np.max(scores, axis=1, keepdims=True))
         attention = exp_scores / (np.sum(exp_scores, axis=1, keepdims=True) + 1e-8)
-        return np.sum(history_matrix * attention, axis=1)
+        return np.sum(history_matrix @ attention, axis=1)
 
     def get_outputs(self, uncertainty=None):
         active_voltages = np.clip(self.voltages - (self.adaptation * 1.5), -50, 50)
