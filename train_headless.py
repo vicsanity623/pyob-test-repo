@@ -391,7 +391,10 @@ def main():
     for _ in range(NUM_AGENTS):
         b1, b2 = random.choice(council)[1], random.choice(council)[1]
         child = crossover(b1, b2)
-        brains.append(deepseek_style_mutate(child))
+        brain = deepseek_style_mutate(child)
+        if not hasattr(brain, "_last_outputs"):
+            brain._last_outputs = np.zeros(BRAIN_SIZE)
+        brains.append(brain)
 
     envs = [Environment(k_gen, k_max_health) for _ in range(NUM_AGENTS)]
 
