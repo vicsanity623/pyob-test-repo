@@ -447,7 +447,6 @@ function resetEnv(){
   if (workerReady && rawBrainData) {
     worker.postMessage({ type: 'init', brainData: rawBrainData });
   }
-  this.agents[0]._alreadyReproduced = false;
 }
 
 // Manual refresh button
