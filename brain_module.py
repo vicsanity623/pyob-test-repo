@@ -1,5 +1,5 @@
-import numpy as np
-import random
+import numpy as np  # type: ignore
+
 
 class ImprovedCTRNN:
     def __init__(self, size=256):
@@ -25,15 +25,18 @@ class ImprovedCTRNN:
         self._last_child_score = 0
 
     def compress_sensors(self, sensors):
-        if sensors is None: sensors = np.zeros(19)
+        if sensors is None:
+            sensors = np.zeros(19)
         compressed = np.tanh(np.dot(self.compress_weights, sensors))
         self.compressed_memory = 0.9 * self.compressed_memory + 0.1 * compressed
         return self.compressed_memory
 
     def sparse_attention(self, current_voltages):
-        if len(self.voltage_history) < 2: return current_voltages
+        if len(self.voltage_history) < 2:
+            return current_voltages
         history = self.voltage_history[-32:]
-        if len(history) < 32: history = [np.zeros(self.size)] * (32 - len(history)) + history
+        if len(history) < 32:
+            history = [np.zeros(self.size)] * (32 - len(history)) + history
         history_matrix = np.array(history).T
         scores = self.attention_weights * history_matrix
         scores = np.clip(scores, -10, 10)
@@ -52,20 +55,37 @@ class ImprovedCTRNN:
         else:
             return 1.0 / (1.0 + np.exp(-self.sparse_attention(active_voltages)))
 
-    def tick(self, dt, sensors, uncertainty=None, use_planning=False, precomputed_net_input=None):
+    def tick(
+        self,
+        dt,
+        sensors,
+        uncertainty=None,
+        use_planning=False,
+        precomputed_net_input=None,
+    ):
         compressed = self.compress_sensors(sensors)
         outputs = self.get_outputs(uncertainty)
-        network_input = precomputed_net_input + self.biases if precomputed_net_input is not None else np.dot(self.weights, outputs) + self.biases
-        total_input = network_input.copy()
-        total_input[:min(self.size, 64)] += compressed[:min(self.size, 64)] * 50.0
+        network_input = (
+            precomputed_net_input + self.biases
+            if precomputed_net_input is not None
+            else np.dot(self.weights, outputs) + self.biases
+        )
+        total_input = np.array(network_input, copy=True)
+        total_input[: min(self.size, 64)] += compressed[: min(self.size, 64)] * 50.0
         if sensors is not None:
-            total_input[:min(self.size, 19)] += sensors[:min(self.size, 19)] * 50.0
+            total_input[: min(self.size, 19)] += sensors[: min(self.size, 19)] * 50.0
         derivative = (-self.voltages + total_input) / self.time_constants
         self.voltages = np.clip(self.voltages + derivative * dt, -100, 100)
         self.adaptation += (outputs * 0.1 - self.adaptation * 0.05) * dt
-        self.ltm_trace = self.ltm_trace * self.ltm_decay + outputs * (1 - self.ltm_decay)
+        self.ltm_trace = self.ltm_trace * self.ltm_decay + outputs * (
+            1 - self.ltm_decay
+        )
         self.voltage_history.append(self.voltages.copy())
-        if len(self.voltage_history) > 64: self.voltage_history = self.voltage_history[-64:]
+        if len(self.voltage_history) > 64:
+            self.voltage_history = self.voltage_history[-64:]
         self._last_outputs = outputs
-        self._prev_motor = 0.7 * getattr(self, "_prev_motor", np.array([0.5, 0.5])) + 0.3 * outputs[-2:]
+        self._prev_motor = (
+            0.7 * getattr(self, "_prev_motor", np.array([0.5, 0.5]))
+            + 0.3 * outputs[-2:]
+        )
         return outputs
