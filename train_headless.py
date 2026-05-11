@@ -459,6 +459,8 @@ def main():
                     brains[i] = deepseek_style_mutate(council[-1][1])
                 else:
                     brains[i] = ImprovedCTRNN(BRAIN_SIZE)
+                    brains[i]._last_outputs = np.zeros(BRAIN_SIZE)
+                    brains[i]._prev_motor = np.array([0.5, 0.5])
 
                 envs[i] = Environment(k_gen, k_max_health)
 
