@@ -5,7 +5,7 @@ echo "   Starting Idle Pal RPG Check...    "
 echo "====================================="
 
 # Define the required PWA game files
-FILES=("index.html", "train_headless.py", "brain_module.py")
+FILES=("index.html, train_headless.py, brain_module.py")
 ERRORS=0
 
 # Loop through each file and verify it exists and is not empty
