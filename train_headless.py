@@ -466,6 +466,7 @@ def main():
                     brains[i]._last_outputs = np.zeros(BRAIN_SIZE)
                     brains[i]._prev_motor = np.array([0.5, 0.5])
                     brains[i]._batched_net_in = np.zeros(BRAIN_SIZE)
+                    brains[i].initialize_state()
 
                 envs[i] = Environment(k_gen, k_max_health)
 
