@@ -356,14 +356,13 @@ class Village {
         a.health -= baseDrain;
 
         if(a.foodEaten === undefined) a.foodEaten = 0;
-        
-        // Count food eaten by this agent
+
         this.foodPos.forEach(([fx,fy],fi)=>{
           if((fx-a.pos[0])**2+(fy-a.pos[1])**2<16){
             a.health=Math.min(this.maxHealth, a.health+45); 
             this.globalFoodEaten++; 
             a.lastFoodTime=this.ticks;
-            a.foodEaten = (a.foodEaten || 0) + 1;   // Track personal food count
+            a.foodEaten++;
             this.foodPos[fi]=[rand(10,WORLD_SIZE-10),rand(10,WORLD_SIZE-10)];
           }
         });
