@@ -110,7 +110,8 @@ class ImprovedCTRNN:
         return outputs
 
     def forward_plan(self, steps=PLANNING_HORIZON):
-        if steps is None: steps = PLANNING_HORIZON
+        if steps is None:
+            steps = PLANNING_HORIZON
         plans = []
         current_state = self.voltages.copy()
         original_mode = self.thinking_mode
@@ -172,7 +173,7 @@ class ImprovedCTRNN:
             _plan_budget[0] -= 1
             action_bias = self.forward_plan(None)
             outputs[-2:] += action_bias
-            
+
         self._last_outputs = outputs
         final_motor = (
             0.7 * getattr(self, "_prev_motor", np.array([0.5, 0.5]))
@@ -329,7 +330,7 @@ class Environment:
         base_drain = 0.02 + (self.max_health / 10000.0)
         self.health -= base_drain
 
-        if self.food_count >= 5 and not hasattr(self, '_already_reproduced'):
+        if self.food_count >= 5 and not hasattr(self, "_already_reproduced"):
             self.children_spawned += 1
             self.health = min(
                 self.max_health, self.health + 100
