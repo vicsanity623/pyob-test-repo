@@ -357,16 +357,6 @@ class Village {
 
         if(a.foodEaten === undefined) a.foodEaten = 0;
 
-        this.foodPos.forEach(([fx,fy],fi)=>{
-          if((fx-a.pos[0])**2+(fy-a.pos[1])**2<16){
-            a.health=Math.min(this.maxHealth, a.health+45); 
-            this.globalFoodEaten++; 
-            a.lastFoodTime=this.ticks;
-            a.foodEaten++;
-            this.foodPos[fi]=[rand(10,WORLD_SIZE-10),rand(10,WORLD_SIZE-10)];
-          }
-        });
-
         if(a.foodEaten >= 5 && !a._alreadyReproduced) {
             a.health = Math.min(this.maxHealth, a.health + 100);
             worker.postMessage({ type: 'spawn', parentId: i });
