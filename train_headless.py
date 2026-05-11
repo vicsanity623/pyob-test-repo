@@ -6,7 +6,7 @@ Runs at max CPU speed for --minutes duration, then saves:
   - brain.json              (read by index.html GitHub Pages viewer)
 """
 
-import numpy as np
+import numpy as np  # type: ignore
 import pickle
 import os
 import time
@@ -222,6 +222,7 @@ class Environment:
         self.food_visible = True
         self.predator_active = self.gen >= 500
         self.last_food_time = 0
+        self._already_reproduced = False
 
     def get_sensors(self):
         self.food_visible = (self.ticks % 300) < 240
