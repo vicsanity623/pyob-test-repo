@@ -169,7 +169,7 @@ class CTRNN {
       if(this.thinkingMode === 1 && this.voltHistory.length > 1) {
         let score = 0;
         for(let i=0; i<Math.min(this.voltHistory.length, ATTENTION_WIN); i++) {
-          score += (this.attnW && this.attnW[n] ? this.attnW[n][i % ATTENTION_WIN] : 0) * this.voltHistory[i][n];
+          score += this.attnW[n][i % ATTENTION_WIN] * this.voltHistory[i][n];
         }
         val = (v + Math.max(-10, Math.min(10, score))) * 0.5;
       }
@@ -211,8 +211,8 @@ class CTRNN {
       this.adaptation[n]+=(outputs[n]*0.1-this.adaptation[n]*0.05)*dt;
       this.ltmTrace[n] = this.ltmTrace[n]*0.999 + outputs[n]*0.001;
     }
-    if (this.voltHistory.length >= ATTENTION_WIN * 2) this.voltHistory.shift();
     this.voltHistory.push(Float64Array.from(this.voltages));
+    if(this.voltHistory.length>ATTENTION_WIN*2) this.voltHistory.shift();
     
     const motor = outputs.slice(-2);
     this._prevMotor = [0.7*this._prevMotor[0] + 0.3*motor[0], 0.7*this._prevMotor[1] + 0.3*motor[1]];
@@ -336,7 +336,6 @@ class Village {
       if(this.poisonPos[i][1]<0||this.poisonPos[i][1]>WORLD_SIZE) this.poisonVels[i][1]*=-1;
     });
 
-    const spawned = [];
     for(let i=0; i<this.agents.length; i++) {
         let a = this.agents[i];
         if(a.dead) continue;
@@ -363,8 +362,8 @@ class Village {
         if(a.foodEaten >= 5 && !a._alreadyReproduced) {
             a.health = Math.min(this.maxHealth, a.health + 100);
             worker.postMessage({ type: 'spawn', parentId: i });
-            spawned.push({
-                id: this.agents.length + spawned.length,
+            this.agents.push({
+                id: this.agents.length,
                 pos: [a.pos[0]+randS(10), a.pos[1]+randS(10)],
                 health: this.maxHealth,
                 wallHits: 0, lastFoodTime: this.ticks, 
@@ -394,7 +393,6 @@ class Village {
             worker.postMessage({ type: 'kill', id: i });
         }
     }
-    this.agents.push(...spawned);
     return {anyAlive, aliveCount: aliveCountThisTick};
   }
 }
@@ -406,7 +404,7 @@ let accumulator = 0;
 
 worker.onmessage = (e) => {
   if(e.data.type === 'ready') workerReady = true;
-  if(e.data.type === 'out' && workerReady && village) {
+  if(e.data.type === 'out') {
     const result = village.updatePhysics(e.data.motors, e.data.modes);
     if(!result.anyAlive) resetEnv(); 
   }
