@@ -253,7 +253,8 @@ let workerReady = false;
 
 // ─── Environment (Multi-Agent Village) ───────────────────────────────────────
 class Village {
-  constructor(gen: number, maxHealth: number){
+  /** @param {number} gen @param {number} maxHealth */
+  constructor(gen, maxHealth){
     this.gen=gen; this.maxHealth=maxHealth;
     this.foodPos=Array.from({length:40},()=>[rand(10,WORLD_SIZE-10),rand(10,WORLD_SIZE-10)]);
     this.poisonPos=Array.from({length:10},()=>[rand(10,WORLD_SIZE-10),rand(10,WORLD_SIZE-10)]);
