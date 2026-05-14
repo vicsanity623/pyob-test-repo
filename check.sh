@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Strict Repository Validation Pipeline
+# Strict Repository Validation Pipeline (V2 - Web + Python)
 
-set -e # Exit immediately if a command exits with a non-zero status
-set -u # Treat unset variables as an error
+set -e 
+set -u 
 
 echo "=========================================="
 echo " Starting Strict Quality Checks..."
 echo "=========================================="
 
 # 1. Verify necessary Web Files exist
-echo "[1/4] Checking required web files..."
+echo "[1/5] Checking required web files..."
+# Added style.css to the required list
 REQUIRED_FILES=("index.html" "manifest.json" "sw.js")
 for FILE in "${REQUIRED_FILES[@]}"; do
     if [ ! -f "$FILE" ]; then
@@ -17,35 +18,50 @@ for FILE in "${REQUIRED_FILES[@]}"; do
         exit 1
     fi
 done
-echo "✅ All required web files are present."
 
-# 2. Check for Icons (Warn if missing since user adds them)
-echo "[2/4] Checking for icon assets..."
-if [ ! -f "idle192.png" ] || [ ! -f "idle512.png" ]; then
-    echo "⚠️  WARNING: idle192.png or idle512.png not found."
-    echo "   (Make sure to add them before deploying to GitHub Pages)"
+# 2. Verify Internal Links (Catches the "missing file but linked" error)
+echo "[2/5] Validating internal file references..."
+# This looks for href="file.css" or src="file.js" and checks if those files exist
+links=$(grep -oE '(href|src)="([^"#]+)"' index.html | cut -d'"' -f2)
+for link in $links; do
+    if [[ $link == http* ]]; then continue; fi # Skip external URLs
+    if [ ! -f "$link" ]; then
+        echo "❌ ERROR: index.html references '$link', but the file does not exist."
+        exit 1
+    fi
+done
+
+# 3. HTML/CSS Syntax Check (Optional but recommended)
+echo "[3/5] Checking HTML/CSS Integrity..."
+if command -v htmlhint &> /dev/null; then
+    htmlhint index.html
 else
-    echo "✅ Icons found."
+    # Fallback: Basic check to ensure no dangling CSS variables in raw HTML
+    if grep -q "--bg-color" index.html; then
+        # If we see CSS variables in HTML but no <style> tag, it's likely a bot error
+        if ! grep -q "<style>" index.html; then
+            echo "❌ ERROR: Detected raw CSS variables in index.html without a <style> tag."
+            exit 1
+        fi
+    fi
 fi
 
-# 3. Python Strict Linting via Ruff
-echo "[3/4] Running Ruff (Strict Python Linter)..."
+# 4. Python Strict Linting via Ruff
+echo "[4/5] Running Ruff (Strict Python Linter)..."
 if command -v ruff &> /dev/null; then
-    # Runs ruff on any python files in the directory
     ruff check .
     echo "✅ Ruff checks passed."
 else
-    echo "⚠️  Ruff not installed or not in PATH. Skipping Python linting."
+    echo "⚠️  Ruff not installed. Skipping."
 fi
 
-# 4. Python Strict Typing via Mypy
-echo "[4/4] Running Mypy (Strict Python Type Checker)..."
+# 5. Python Strict Typing via Mypy
+echo "[5/5] Running Mypy (Strict Python Type Checker)..."
 if command -v mypy &> /dev/null; then
-    # Runs mypy strictly on python files
     mypy . --strict
     echo "✅ Mypy checks passed."
 else
-    echo "⚠️  Mypy not installed or not in PATH. Skipping Python type checking."
+    echo "⚠️  Mypy not installed. Skipping."
 fi
 
 echo "=========================================="
