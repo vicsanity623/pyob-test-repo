@@ -7,11 +7,9 @@ import nltk
 from datetime import datetime, timezone
 import os
 
-# Download NLTK tokenizer models (handled in workflow, but good fallback)
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt', quiet=True)
+# Download NLTK tokenizer models (Updated to include 'punkt_tab')
+nltk.download('punkt', quiet=True)
+nltk.download('punkt_tab', quiet=True)
 
 LEDGER_FILE = "ledger.json"
 
@@ -67,7 +65,9 @@ def fetch_wikipedia_facts(title, topic):
             if len(sentence) < 40 or len(sentence) > 200:
                 continue # Skip too short or too long sentences
             if any(kw in sentence for kw in keywords):
-                facts.append(sentence.strip())
+                # Clean up newlines in the text
+                clean_fact = sentence.replace('\n', ' ').strip()
+                facts.append(clean_fact)
                 if len(facts) >= 20: # Limit per source
                     break
                     
@@ -101,7 +101,6 @@ def generate_ledger():
     print("Scraping RSS Feeds...")
     try:
         rss_url = "https://hiphopdx.com/rss/news"
-        # Feedparser takes an agent string directly or works without one sometimes, but good to be safe
         feed = feedparser.parse(rss_url, agent=HEADERS["User-Agent"])
         for entry in feed.entries[:15]:
             title = entry.title
@@ -115,7 +114,8 @@ def generate_ledger():
     
     # Seal new facts into the ledger
     added = 0
-    for item in new_facts:
+    # Process from bottom to top so newest scraped items end up at the top
+    for item in reversed(new_facts):
         if item['fact'] not in existing_facts:
             prev_hash = get_previous_hash(ledger)
             block = create_block(item['fact'], item['source'], item['topic'], prev_hash)
