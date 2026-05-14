@@ -2,416 +2,517 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- PWA & iOS Fullscreen Meta Tags -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
-    <meta name="description" content="Digital Clock & Device Dashboard">
-    <title>Digital Dashboard</title>
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="icon-192x192.png">
-    <link rel="apple-touch-icon" href="icon-192x192.png">
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axiom Engine | Hip Hop Ledger</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
         :root {
-            --neon-green: #00ff41;
-            --dark-bg: #000000;
-            --dim-green: #004d14;
+            --bg-color: #0f0f0f;
+            --surface-color: #212121;
+            --hover-color: #3d3d3d;
+            --text-primary: #f1f1f1;
+            --text-secondary: #aaaaaa;
+            --accent-color: #3ea6ff;
+            --verified-color: #2ba640;
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
         }
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: var(--dark-bg);
-            color: var(--neon-green);
-            font-family: 'Share Tech Mono', monospace;
-            overflow: hidden;
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
             display: flex;
             flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 60px;
+            background-color: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #ff0000, #ff8c00);
+            border-radius: 8px;
+            display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
         }
 
-        /* Canvas Animation Layer */
-        #waveCanvas {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-
-        #waveCanvas.charging {
-            opacity: 1;
-        }
-
-        /* Main Clock UI */
-        .clock-container {
-            z-index: 2;
-            text-align: center;
-            text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
-            /* Push clock slightly up to balance the footer */
-            transform: translateY(-5vh); 
-        }
-
-        .time {
-            font-size: 18vw;
-            line-height: 1;
-            letter-spacing: 2px;
-        }
-
-        .date {
-            font-size: 3.5vw;
-            margin-top: 10px;
-            letter-spacing: 1px;
-            opacity: 0.8;
-            text-shadow: 0 0 5px var(--neon-green);
-        }
-
-        /* Footer Stats UI */
-        .footer-stats {
-            position: absolute;
-            /* safe-area-inset ensures it avoids the iOS bottom home swipe bar */
-            bottom: max(20px, env(safe-area-inset-bottom));
-            z-index: 3;
-            width: 90%;
-            max-width: 600px;
+        .search-bar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            border-top: 1px solid var(--dim-green);
-            padding-top: 15px;
-            text-shadow: 0 0 5px var(--neon-green);
-            cursor: pointer; /* Suggests interactivity for the iOS workaround */
+            flex: 0 1 600px;
+            background-color: #121212;
+            border: 1px solid #303030;
+            border-radius: 40px;
+            overflow: hidden;
+            margin: 0 20px;
         }
 
-        .stat-group {
+        .search-bar input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            padding: 10px 20px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-bar button {
+            background-color: #222222;
+            border: none;
+            border-left: 1px solid #303030;
+            padding: 0 20px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .search-bar button:hover { background-color: #303030; }
+
+        /* --- MAIN LAYOUT --- */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-color);
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            align-items: center;
             gap: 5px;
-            width: 33%;
+            overflow-y: auto;
         }
 
-        .stat-label {
-            font-size: 10px;
-            opacity: 0.7;
-            text-transform: uppercase;
-        }
-
-        /* Battery Bar Layout */
-        .battery-container {
+        .sidebar-item {
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 15px;
         }
 
-        .battery-outline {
-            width: 40px;
-            height: 18px;
-            border: 2px solid var(--neon-green);
-            border-radius: 3px;
+        .sidebar-item:hover, .sidebar-item.active {
+            background-color: var(--surface-color);
+        }
+
+        /* --- CONTENT AREA --- */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+            padding: 20px;
+        }
+
+        /* --- FILTERS --- */
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .filter-chip {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+
+        .filter-chip:hover { background-color: var(--hover-color); }
+        .filter-chip.active { background-color: var(--text-primary); color: var(--bg-color); }
+
+        /* --- VIDEO / FACT GRID --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding-bottom: 50px;
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .thumbnail {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 12px;
             position: relative;
-            padding: 1px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            transition: 0.2s;
         }
 
-        .battery-outline::after {
-            content: '';
+        .card:hover .thumbnail {
+            border-radius: 0px; /* YouTube hover effect */
+        }
+
+        .thumbnail-text {
+            font-size: 22px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .source-badge {
             position: absolute;
-            right: -5px;
-            top: 4px;
-            width: 3px;
-            height: 6px;
-            background-color: var(--neon-green);
-            border-radius: 0 2px 2px 0;
+            bottom: 8px;
+            right: 8px;
+            background-color: rgba(0,0,0,0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
         }
 
-        .battery-fill {
-            height: 100%;
-            background-color: var(--neon-green);
-            width: 0%;
-            transition: width 0.3s ease;
-            box-shadow: 0 0 5px var(--neon-green);
+        .card-info {
+            display: flex;
+            gap: 12px;
         }
 
-        /* Responsive adjustments */
-        @media (min-width: 768px) {
-            .time { font-size: 120px; }
-            .date { font-size: 24px; }
-            .footer-stats { font-size: 16px; bottom: max(40px, env(safe-area-inset-bottom)); }
+        .channel-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--surface-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fact-title {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .fact-details {
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .verified-icon {
+            color: var(--verified-color);
+            font-size: 12px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .action-btn:hover { color: var(--text-primary); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .search-bar { margin: 0 10px; flex: 1; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Energy Flow Animation Canvas -->
-    <canvas id="waveCanvas"></canvas>
-
-    <!-- Center Clock -->
-    <main class="clock-container">
-        <div class="time" id="timeDisplay">00:00:00</div>
-        <div class="date" id="dateDisplay">Loading...</div>
-    </main>
-
-    <!-- Bottom Dashboard -->
-    <footer class="footer-stats" id="footerClickArea">
-        <div class="stat-group">
-            <span class="stat-label">CPU Cores</span>
-            <span id="cpuDisplay">--</span>
+    <header>
+        <div class="logo">
+            <div class="logo-icon">AE</div>
+            Axiom Engine
         </div>
-        <div class="stat-group">
-            <span class="stat-label">RAM</span>
-            <span id="ramDisplay">--</span>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search verified facts...">
+            <button onclick="applyFilters()">🔍</button>
         </div>
-        <div class="stat-group">
-            <span class="stat-label" id="chargeStatus">Battery</span>
-            <div class="battery-container">
-                <div class="battery-outline">
-                    <div class="battery-fill" id="batteryFill"></div>
-                </div>
-                <span id="batteryPct">--%</span>
+        <div class="logo" style="font-size:14px; color:var(--text-secondary)">
+            Ledger Sync: <span id="syncStatus" style="color:var(--verified-color)">● Active</span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="sidebar-item active" onclick="setCategory('All')">🏠 Home</div>
+            <div class="sidebar-item" onclick="setCategory('Eminem')">🎤 Eminem Facts</div>
+            <div class="sidebar-item" onclick="setCategory('Trending')">🔥 Trending News</div>
+            <div style="border-top: 1px solid var(--surface-color); margin: 10px 0;"></div>
+            <div class="sidebar-item" onclick="setCategory('Favorites')">⭐ Favorites</div>
+            <div class="sidebar-item" onclick="setCategory('History')">🕒 History</div>
+        </aside>
+
+        <main class="content">
+            <div class="filters" id="filterContainer">
+                <button class="filter-chip active" onclick="setCategory('All')">All</button>
+                <button class="filter-chip" onclick="setCategory('Eminem')">Eminem</button>
+                <button class="filter-chip" onclick="setCategory('Hip Hop History')">Classics</button>
+                <button class="filter-chip" onclick="setCategory('Trending')">Trending</button>
             </div>
-        </div>
-    </footer>
+
+            <div class="grid" id="videoGrid">
+                <!-- Data injected here via JS -->
+            </div>
+        </main>
+    </div>
 
     <script>
-        'use strict';
+        let fullLedger = [];
+        let currentCategory = 'All';
+        
+        // LocalStorage DBs
+        let favorites = JSON.parse(localStorage.getItem('axiom_favs')) || [];
+        let history = JSON.parse(localStorage.getItem('axiom_history')) || [];
 
-        /** 
-         * Service Worker Registration for PWA 
-         * @returns {void}
-         */
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('sw.js').catch(error => {
-                        console.error('SW Registration failed:', error);
-                    });
-                });
-            }
+        // Generates a deterministic gradient based on the block's SHA-256 hash
+        function hashToGradient(hash) {
+            const c1 = `#${hash.substring(0, 6)}`;
+            const c2 = `#${hash.substring(6, 12)}`;
+            return `linear-gradient(135deg, ${c1}, ${c2})`;
         }
 
-        /**
-         * Get Ordinal Suffix for Day (st, nd, rd, th)
-         * @param {number} d - Day of the month
-         * @returns {string} 
-         */
-        function getOrdinalSuffix(d) {
-            if (d > 3 && d < 21) return 'th';
-            switch (d % 10) {
-                case 1:  return "st";
-                case 2:  return "nd";
-                case 3:  return "rd";
-                default: return "th";
-            }
+        // Relative time formatter (e.g., "3 hours ago")
+        function timeSince(dateString) {
+            const date = new Date(dateString);
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            return "Just now";
         }
 
-        /**
-         * Update Clock and Date UI
-         * @returns {void}
-         */
-        function updateClock() {
-            const now = new Date();
-            
-            // Time Formatting (12-hr HH:MM:SS)
-            let hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            
-            hours = hours % 12;
-            hours = hours ? hours : 12; // '0' becomes '12'
-            const hoursStr = String(hours).padStart(2, '0');
-            
-            document.getElementById('timeDisplay').textContent = `${hoursStr}:${minutes}:${seconds}`;
-
-            // Date Formatting
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            
-            const dayName = days[now.getDay()];
-            const monthName = months[now.getMonth()];
-            const dayNum = now.getDate();
-            const year = now.getFullYear();
-            const suffix = getOrdinalSuffix(dayNum);
-
-            document.getElementById('dateDisplay').textContent = `${dayName}, ${monthName} ${dayNum}${suffix}, ${year}`;
-        }
-
-        /** 
-         * Canvas Energy Flow Animation System 
-         */
-        const canvas = document.getElementById('waveCanvas');
-        const ctx = canvas.getContext('2d');
-        let isCharging = false;
-        let animationFrameId;
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        class LightParticle {
-            constructor() {
-                this.reset();
-                this.y = canvas.height + Math.random() * 200; 
-            }
-
-            reset() {
-                this.x = canvas.width / 2 + (Math.random() - 0.5) * 60; 
-                this.y = canvas.height + 10;
-                this.size = Math.random() * 3 + 1;
-                this.speedY = Math.random() * 3 + 1.5;
-                this.speedX = (Math.random() - 0.5) * 2.0;
-                this.life = 1.0;
-                this.decay = Math.random() * 0.005 + 0.002;
-            }
-
-            update() {
-                this.y -= this.speedY;
-                this.x += this.speedX;
-                this.speedX += (Math.random() - 0.5) * 0.1;
-                this.life -= this.decay;
-
-                if (this.life <= 0 || this.y < 0) {
-                    this.reset();
-                }
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 255, 65, ${this.life})`;
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#00ff41';
-                ctx.fill();
-                ctx.shadowBlur = 0; 
-            }
-        }
-
-        function initParticles() {
-            particles = [];
-            const particleCount = window.innerWidth < 768 ? 60 : 120;
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new LightParticle());
-            }
-        }
-
-        function animateWaves() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            if (isCharging) {
-                particles.forEach(p => {
-                    p.update();
-                    p.draw();
-                });
-            }
-            animationFrameId = requestAnimationFrame(animateWaves);
-        }
-
-        /**
-         * Initialize Hardware and Battery Stats
-         * @returns {void}
-         */
-        function initStats() {
-            const cpuDisplay = document.getElementById('cpuDisplay');
-            const ramDisplay = document.getElementById('ramDisplay');
-            const batteryFill = document.getElementById('batteryFill');
-            const batteryPct = document.getElementById('batteryPct');
-            const chargeStatus = document.getElementById('chargeStatus');
-            const footerClickArea = document.getElementById('footerClickArea');
-            
-            // iOS restricts RAM/CPU. If unavailable, show "SECURE" instead of ugly N/A
-            cpuDisplay.textContent = navigator.hardwareConcurrency ? navigator.hardwareConcurrency : 'SECURE';
-            ramDisplay.textContent = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'SECURE';
-
-            function updateBatteryUI(battery) {
-                const level = Math.round(battery.level * 100);
-                batteryFill.style.width = `${level}%`;
-                batteryPct.textContent = `${level}%`;
-                
-                isCharging = battery.charging;
-                
-                if (isCharging) {
-                    chargeStatus.textContent = 'CHARGING';
-                    canvas.classList.add('charging');
-                } else {
-                    chargeStatus.textContent = 'BATTERY';
-                    canvas.classList.remove('charging');
-                }
-            }
-
-            // Detect if browser supports Battery API (Android/Chrome)
-            if ('getBattery' in navigator) {
-                navigator.getBattery().then(battery => {
-                    updateBatteryUI(battery);
-                    battery.addEventListener('levelchange', () => updateBatteryUI(battery));
-                    battery.addEventListener('chargingchange', () => updateBatteryUI(battery));
-                });
+        // Toggle Favorite
+        function toggleFav(hash, event) {
+            event.stopPropagation(); // prevent card click
+            if (favorites.includes(hash)) {
+                favorites = favorites.filter(h => h !== hash);
             } else {
-                // iOS FALLBACK: Apple blocks getBattery() 
-                // We provide a manual tap-to-toggle feature so iOS users can still see the animation
-                batteryFill.style.width = '100%';
-                batteryPct.textContent = 'SECURE';
-                chargeStatus.textContent = 'TAP TO CHG';
-                
-                footerClickArea.addEventListener('click', () => {
-                    isCharging = !isCharging;
-                    if (isCharging) {
-                        chargeStatus.textContent = 'CHARGING';
-                        canvas.classList.add('charging');
-                    } else {
-                        chargeStatus.textContent = 'TAP TO CHG';
-                        canvas.classList.remove('charging');
-                    }
-                });
+                favorites.push(hash);
+            }
+            localStorage.setItem('axiom_favs', JSON.stringify(favorites));
+            applyFilters(); // Re-render
+        }
+
+        // Add to History on click
+        function recordHistory(hash) {
+            if (!history.includes(hash)) {
+                history.unshift(hash);
+                if (history.length > 50) history.pop(); // Keep last 50
+                localStorage.setItem('axiom_history', JSON.stringify(history));
+            }
+            alert("Block Hash Copied: \n" + hash);
+        }
+
+        // Render the UI Grid
+        function renderGrid(data) {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+
+            if (data.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-secondary); grid-column: 1/-1;">No records found in the ledger.</p>';
+                return;
             }
 
-            // Attempt to force fullscreen on interaction (helps hide UI on Android/Desktop)
-            document.body.addEventListener('dblclick', () => {
-                if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+            data.forEach(block => {
+                const isFav = favorites.includes(block.hash);
+                const bgGradient = hashToGradient(block.hash);
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => recordHistory(block.hash);
+                
+                card.innerHTML = `
+                    <div class="thumbnail" style="background: ${bgGradient};">
+                        <div class="thumbnail-text">${block.topic}</div>
+                        <div class="source-badge">${block.source}</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="channel-icon">${block.source.charAt(0)}</div>
+                        <div class="meta">
+                            <div class="fact-title">${block.fact}</div>
+                            <div class="fact-details">
+                                Axiom Engine <span class="verified-icon">✔</span> • ${timeSince(block.timestamp)}
+                            </div>
+                            <div class="action-btns">
+                                <button class="action-btn" onclick="toggleFav('${block.hash}', event)">
+                                    ${isFav ? '⭐ Saved' : '☆ Save'}
+                                </button>
+                                <button class="action-btn" title="Block Hash: ${block.hash}">🔗 View Block</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
             });
         }
 
-        // Initialization
-        window.addEventListener('resize', resizeCanvas);
-        setInterval(updateClock, 100);
-        
-        registerServiceWorker();
-        updateClock();
-        initStats();
-        
-        resizeCanvas();
-        initParticles();
-        animateWaves();
+        // Filter Logic
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = fullLedger;
 
+            // Handle Sidebar Categories
+            if (currentCategory === 'Favorites') {
+                filtered = filtered.filter(b => favorites.includes(b.hash));
+            } else if (currentCategory === 'History') {
+                // Map history hashes back to objects and filter out nulls
+                filtered = history.map(h => fullLedger.find(b => b.hash === h)).filter(b => b);
+            } else if (currentCategory !== 'All') {
+                filtered = filtered.filter(b => b.topic.includes(currentCategory));
+            }
+
+            // Handle Search Bar
+            if (query) {
+                filtered = filtered.filter(b => b.fact.toLowerCase().includes(query) || b.topic.toLowerCase().includes(query));
+            }
+
+            renderGrid(filtered);
+        }
+
+        function setCategory(category) {
+            currentCategory = category;
+            
+            // Update Sidebar UI
+            document.querySelectorAll('.sidebar-item').forEach(el => {
+                el.classList.remove('active');
+                if(el.innerText.includes(category) || (category === 'All' && el.innerText.includes('Home'))) {
+                    el.classList.add('active');
+                }
+            });
+
+            // Update Top Chips UI
+            document.querySelectorAll('.filter-chip').forEach(el => {
+                el.classList.remove('active');
+                if(el.innerText === category || (category === 'All' && el.innerText === 'All')) {
+                    el.classList.add('active');
+                }
+            });
+
+            applyFilters();
+        }
+
+        // Initialize App
+        async function init() {
+            try {
+                // Fetch the JSON generated by GitHub Actions
+                const response = await fetch('ledger.json?nocache=' + new Date().getTime());
+                if(!response.ok) throw new Error("Ledger not found");
+                fullLedger = await response.json();
+                applyFilters();
+            } catch (err) {
+                console.error("Error fetching ledger:", err);
+                document.getElementById('syncStatus').innerText = 'Offline - No DB found';
+                document.getElementById('syncStatus').style.color = 'red';
+                
+                // Fallback Mock Data for immediate UI testing
+                fullLedger = [
+                    {
+                        "timestamp": new Date().toISOString(),
+                        "source": "Wikipedia",
+                        "topic": "Eminem",
+                        "fact": "Eminem's 'The Marshall Mathers LP' sold 1.76 million copies in its first week.",
+                        "prev_hash": "000",
+                        "hash": "a1b2c3d4e5f67890"
+                    },
+                    {
+                        "timestamp": new Date(Date.now() - 86400000).toISOString(),
+                        "source": "HipHopDX RSS",
+                        "topic": "Trending",
+                        "fact": "New documentary on hip hop history tops the charts this week.",
+                        "prev_hash": "a1b2c3d4e5f67890",
+                        "hash": "f6e5d4c3b2a10987"
+                    }
+                ];
+                applyFilters();
+            }
+        }
+
+        // Listen for enter key in search
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') applyFilters();
+        });
+
+        init();
     </script>
 </body>
 </html>
