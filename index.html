@@ -46,7 +46,7 @@
             /* Sticky at 0 keeps this at the very top of the screen */
             position: sticky;
             top: 0;
-            height: env(safe-area-inset-top);
+            height: calc(env(safe-area-inset-top) + 30px);
             background-color: #000000;
             z-index: 100; 
         }
@@ -56,9 +56,9 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
-            /* Sticky below the status-bar-bg */
+            /* Sticky below the expanded status-bar-bg */
             position: sticky;
-            top: env(safe-area-inset-top);
+            top: calc(env(safe-area-inset-top) + 30px);
             height: 60px;
             background-color: var(--bg-color);
             z-index: 90;
