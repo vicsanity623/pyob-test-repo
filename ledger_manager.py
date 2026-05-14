@@ -4,6 +4,7 @@ from typing import List, Dict
 
 LEDGER_FILE: str = "ledger.json"
 
+
 def load_ledger() -> List[Dict[str, str]]:
     if os.path.exists(LEDGER_FILE):
         try:
@@ -15,10 +16,12 @@ def load_ledger() -> List[Dict[str, str]]:
             pass
     return []
 
+
 def save_ledger(ledger: List[Dict[str, str]]) -> None:
     optimized_ledger = ledger[:1000]
     with open(LEDGER_FILE, "w") as f:
         json.dump(optimized_ledger, f, indent=2)
+
 
 def flag_block(block_hash: str, status: str) -> bool:
     """
@@ -30,4 +33,5 @@ def flag_block(block_hash: str, status: str) -> bool:
             block["status"] = status
             save_ledger(ledger)
             return True
+    return False
     return False
