@@ -28,7 +28,7 @@ jobs:
 
       - name: Run Axiom Engine (Scrape, NLP & Seal)
         # This script will now run in a loop for ~2.8 hours before finishing
-        run: python engine.py
+        run: python -u engine.py
 
       - name: Commit and Push Ledger
         run: |
