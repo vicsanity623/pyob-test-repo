@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <!-- Updated viewport for better mobile PWA experience -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Axiom Engine | Hip Hop Ledger</title>
+    <title>NotGPT | Hip Hop Ledger</title>
     
     <!-- PWA Manifest & App Icons -->
     <link rel="manifest" href="manifest.json">
@@ -303,7 +303,7 @@
     <header>
         <div class="logo">
             <div class="logo-icon">AE</div>
-            Axiom Engine
+            NotGPT
         </div>
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Search verified facts...">
@@ -420,7 +420,7 @@
                         <div class="meta">
                             <div class="fact-title">${block.fact}</div>
                             <div class="fact-details">
-                                Axiom Engine <span class="verified-icon">✔</span> • ${timeSince(block.timestamp)}
+                                NotGPT <span class="verified-icon">✔</span> • ${timeSince(block.timestamp)}
                             </div>
                             <div class="action-btns">
                                 <button class="action-btn" onclick="toggleFav('${block.hash}', event)">
@@ -526,10 +526,10 @@
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => {
-                        console.log('Axiom Engine SW registered with scope:', registration.scope);
+                        console.log('NotGPT SW registered with scope:', registration.scope);
                     })
                     .catch(error => {
-                        console.error('Axiom Engine SW registration failed:', error);
+                        console.error('NotGPT SW registration failed:', error);
                     });
             });
         }
