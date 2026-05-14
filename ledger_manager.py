@@ -18,7 +18,7 @@ def load_ledger() -> List[Dict[str, str]]:
 
 
 def save_ledger(ledger: List[Dict[str, str]]) -> None:
-    optimized_ledger = ledger[:1000]
+    optimized_ledger: List[Dict[str, str]] = ledger[:1000]
     with open(LEDGER_FILE, "w") as f:
         json.dump(optimized_ledger, f, indent=2)
 
@@ -27,7 +27,7 @@ def flag_block(block_hash: str, status: str) -> bool:
     """
     Interactive Feature: Allows users to flag a block as 'verified' or 'disputed'.
     """
-    ledger = load_ledger()
+    ledger: List[Dict[str, str]] = load_ledger()
     for block in ledger:
         if block.get("hash") == block_hash:
             block["status"] = status
