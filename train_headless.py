@@ -332,11 +332,9 @@ class Environment:
         base_drain = 0.02 + (self.max_health / 10000.0)
         self.health -= base_drain
 
-        if self.food_count >= 5 and not hasattr(self, "_already_reproduced"):
+        if self.food_count >= 5 and not self._already_reproduced:
             self.children_spawned += 1
-            self.health = min(
-                self.max_health, self.health + 100
-            )  # Healing reward for reproducing
+            self.health = min(self.max_health, self.health + 100)
             self._already_reproduced = True
 
         ate_food = False
@@ -394,7 +392,7 @@ class Environment:
 # ==========================================
 # 4. GENETIC REPRODUCTION & MUTATION
 # ==========================================
-def crossover(b1, b2):
+def crossover(b1: ImprovedCTRNN, b2: ImprovedCTRNN) -> ImprovedCTRNN:
     child = ImprovedCTRNN(b1.size)
     w_mask = np.random.rand(*b1.weights.shape) < 0.5
     child.weights = np.where(w_mask, b1.weights, b2.weights)
@@ -415,7 +413,7 @@ def crossover(b1, b2):
     return child
 
 
-def deepseek_style_mutate(brain):
+def deepseek_style_mutate(brain: ImprovedCTRNN) -> ImprovedCTRNN:
     nb = ImprovedCTRNN(brain.size)
     mutation_rate = 0.2 if np.random.rand() < 0.05 else 0.05
     mask = np.random.rand(*brain.weights.shape) < mutation_rate
@@ -516,7 +514,8 @@ def main():
     if os.path.exists(SAVE_FILE):
         import sys
         import __main__
-        sys.modules['brain_module'] = __main__ 
+
+        sys.modules["brain_module"] = __main__
 
         with open(SAVE_FILE, "rb") as f:
             data = pickle.load(f)
