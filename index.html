@@ -263,10 +263,13 @@
             <div class="logo-icon">v1</div>
             <span class="logo-text-hide">NotGPT</span>
         </div>
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search verified facts...">
-            <button onclick="applyFilters()">🔍</button>
-        </div>
+        
+        <!-- FIXED: Wrapped in a form with action prevented to trigger mobile search keyboard -->
+        <form class="search-bar" action="javascript:void(0);" onsubmit="applyFilters(); return false;">
+            <input type="search" id="searchInput" placeholder="Search verified facts..." enterkeyhint="search">
+            <button type="submit">🔍</button>
+        </form>
+
         <div class="logo logo-text-hide" style="font-size:12px; color:var(--text-secondary)">
             Sync: <span id="syncStatus" style="color:var(--verified-color)">● Active</span>
         </div>
@@ -384,7 +387,6 @@
             }
         }
 
-        // --- NEW WATCH VIEW LOGIC ---
         function openWatchView(hash) {
             const block = fullLedger.find(b => b.hash === hash);
             if(!block) return;
@@ -454,10 +456,8 @@
             const sidebar = document.getElementById('wSidebar');
             sidebar.innerHTML = '<h3 style="font-size:16px; margin-bottom:10px;">Up Next</h3>';
             
-            // Filter related, exclude current
             let related = fullLedger.filter(b => b.topic === currentBlock.topic && b.hash !== currentBlock.hash);
             if(related.length < 5) {
-                // Pad with random if not enough related
                 const others = fullLedger.filter(b => b.hash !== currentBlock.hash);
                 related = related.concat(others).slice(0, 8);
             } else {
@@ -539,7 +539,11 @@
         }
 
         function applyFilters() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const input = document.getElementById('searchInput');
+            const query = input.value.toLowerCase();
+            
+            input.blur();
+
             let filtered = fullLedger;
 
             if (currentCategory === 'Favorites') {
@@ -591,9 +595,6 @@
             }
         }
 
-        document.getElementById('searchInput').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') applyFilters();
-        });
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
