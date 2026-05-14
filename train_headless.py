@@ -224,10 +224,12 @@ class Environment:
         self.last_food_time = 0
         self._already_reproduced = False
 
-    def get_sensors(self):
+    def get_sensors(self) -> np.ndarray:
         self.food_visible = (self.ticks % 300) < 240
 
-        def norm_vec_dist(target):
+        def norm_vec_dist(
+            target: np.ndarray | list[float],
+        ) -> tuple[list[float], float]:
             dx, dy = target[0] - self.agent_pos[0], target[1] - self.agent_pos[1]
             dist = np.sqrt(dx * dx + dy * dy) + 0.001
             return [dx / dist, dy / dist], dist
@@ -299,7 +301,11 @@ class Environment:
             ]
         )
 
-    def update(self, motor_output, brain=None):
+    def update(
+        self,
+        motor_output: np.ndarray,
+        brain: ImprovedCTRNN | None = None,
+    ) -> tuple[bool, bool]:
         self.ticks += 1
         dx, dy = (
             (motor_output[0] - 0.5) * MOTOR_SCALE,
@@ -393,7 +399,7 @@ class Environment:
 # 4. GENETIC REPRODUCTION & MUTATION
 # ==========================================
 def crossover(b1: ImprovedCTRNN, b2: ImprovedCTRNN) -> ImprovedCTRNN:
-    child = ImprovedCTRNN(b1.size)
+    child: ImprovedCTRNN = ImprovedCTRNN(b1.size)
     w_mask = np.random.rand(*b1.weights.shape) < 0.5
     child.weights = np.where(w_mask, b1.weights, b2.weights)
     b_mask = np.random.rand(*b1.biases.shape) < 0.5
@@ -414,7 +420,7 @@ def crossover(b1: ImprovedCTRNN, b2: ImprovedCTRNN) -> ImprovedCTRNN:
 
 
 def deepseek_style_mutate(brain: ImprovedCTRNN) -> ImprovedCTRNN:
-    nb = ImprovedCTRNN(brain.size)
+    nb: ImprovedCTRNN = ImprovedCTRNN(brain.size)
     mutation_rate = 0.2 if np.random.rand() < 0.05 else 0.05
     mask = np.random.rand(*brain.weights.shape) < mutation_rate
     nb.weights = np.clip(

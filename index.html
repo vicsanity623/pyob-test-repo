@@ -253,6 +253,7 @@ let workerReady = false;
 
 // ─── Environment (Multi-Agent Village) ───────────────────────────────────────
 class Village {
+  /** @param {number} gen @param {number} maxHealth */
   constructor(gen, maxHealth){
     this.gen=gen; this.maxHealth=maxHealth;
     this.foodPos=Array.from({length:40},()=>[rand(10,WORLD_SIZE-10),rand(10,WORLD_SIZE-10)]);
@@ -276,6 +277,7 @@ class Village {
       foodEaten: 0,
       _alreadyReproduced: false
     }];
+    this.nextId = 1;
   }
 
   getSensorsFor(a){
@@ -363,7 +365,7 @@ class Village {
             a.health = Math.min(this.maxHealth, a.health + 100);
             worker.postMessage({ type: 'spawn', parentId: i });
             this.agents.push({
-                id: this.agents.length,
+                id: this.nextId++,
                 pos: [a.pos[0]+randS(10), a.pos[1]+randS(10)],
                 health: this.maxHealth,
                 wallHits: 0, lastFoodTime: this.ticks, 
