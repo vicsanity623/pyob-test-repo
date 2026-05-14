@@ -347,12 +347,14 @@
         let favorites = JSON.parse(localStorage.getItem('axiom_favs')) || [];
         let history = JSON.parse(localStorage.getItem('axiom_history')) || [];
 
+        /** @param {string} hash @returns {string} */
         function hashToGradient(hash) {
             const c1 = `#${hash.substring(0, 6)}`;
             const c2 = `#${hash.substring(6, 12)}`;
             return `linear-gradient(135deg, ${c1}, ${c2})`;
         }
 
+        /** @param {string} dateString @returns {string} */
         function timeSince(dateString) {
             const date = new Date(dateString);
             const seconds = Math.floor((new Date() - date) / 1000);
