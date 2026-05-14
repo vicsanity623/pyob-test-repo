@@ -34,20 +34,29 @@
             height: 100vh;
             overflow: hidden;
         }
+        
+        .status-bar-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
 
-        /* --- HEADER --- */
+            height: env(safe-area-inset-top);
+            background-color: #000000;
+            z-index: 100; /* Always stays on top */
+        }
+
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 40px;
-            padding-top: max(60px, env(safe-area-inset-top)); 
-            min-height: 60px;
-            padding-bottom: 10px;
-            background-color: var(--bg-color);
+            padding: 0 20px;
             position: sticky;
-            top: 0;
-            z-index: 20;
+            top: env(safe-area-inset-top);
+            height: 60px;
+            background-color: var(--bg-color);
+            z-index: 90;
+            border-bottom: 1px solid #1f1f1f;
         }
 
         .logo {
@@ -102,7 +111,13 @@
         }
 
         /* --- LAYOUTS --- */
-        .main-container { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            margin-top: 0; 
+        }
 
         .sidebar {
             width: 240px;
@@ -232,6 +247,8 @@
     </style>
 </head>
 <body>
+    
+    <div class="status-bar-bg"></div>
 
     <header>
         <div class="logo" onclick="closeWatchView()">
