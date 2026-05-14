@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'dashboard-cache-v1.0.3';
+const CACHE_NAME = 'dashboard-cache-v1.0.4';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
