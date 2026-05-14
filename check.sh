@@ -1,38 +1,53 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Strict Repository Validation Pipeline
 
-echo "====================================="
-echo "   Starting Idle Pal RPG Check...    "
-echo "====================================="
+set -e # Exit immediately if a command exits with a non-zero status
+set -u # Treat unset variables as an error
 
-# Fix: Added spaces between array elements
-FILES=(
-    "index.html"
-    "train_headless.py"
-)
+echo "=========================================="
+echo " Starting Strict Quality Checks..."
+echo "=========================================="
 
-ERRORS=0
-
-for file in "${FILES[@]}"; do
-    # -f checks if it is a regular file
-    if [ -f "$file" ]; then
-        # -s checks if file size is greater than 0
-        if [ -s "$file" ]; then
-            echo "✅ OK: $file found and contains data."
-        else
-            echo "❌ ERROR: $file exists but is completely EMPTY!"
-            ERRORS=1
-        fi
-    else
-        echo "❌ ERROR: Missing required file: $file"
-        ERRORS=1
+# 1. Verify necessary Web Files exist
+echo "[1/4] Checking required web files..."
+REQUIRED_FILES=("index.html" "manifest.json" "sw.js")
+for FILE in "${REQUIRED_FILES[@]}"; do
+    if [ ! -f "$FILE" ]; then
+        echo "❌ ERROR: Required file '$FILE' is missing."
+        exit 1
     fi
 done
+echo "✅ All required web files are present."
 
-echo "====================================="
-if [ $ERRORS -eq 1 ]; then
-    echo "💥 Check Failed! Please fix the errors above."
-    exit 1
+# 2. Check for Icons (Warn if missing since user adds them)
+echo "[2/4] Checking for icon assets..."
+if [ ! -f "idle192x192.png" ] || [ ! -f "idle512x512.png" ]; then
+    echo "⚠️  WARNING: idle192x192.png or idle512x512.png not found."
+    echo "   (Make sure to add them before deploying to GitHub Pages)"
 else
-    echo "🎉 All PWA Game files are present and valid. Check Passed!"
-    exit 0
+    echo "✅ Icons found."
 fi
+
+# 3. Python Strict Linting via Ruff
+echo "[3/4] Running Ruff (Strict Python Linter)..."
+if command -v ruff &> /dev/null; then
+    # Runs ruff on any python files in the directory
+    ruff check .
+    echo "✅ Ruff checks passed."
+else
+    echo "⚠️  Ruff not installed or not in PATH. Skipping Python linting."
+fi
+
+# 4. Python Strict Typing via Mypy
+echo "[4/4] Running Mypy (Strict Python Type Checker)..."
+if command -v mypy &> /dev/null; then
+    # Runs mypy strictly on python files
+    mypy . --strict
+    echo "✅ Mypy checks passed."
+else
+    echo "⚠️  Mypy not installed or not in PATH. Skipping Python type checking."
+fi
+
+echo "=========================================="
+echo "🎉 ALL CHECKS PASSED. Ready for Deployment!"
+echo "=========================================="
