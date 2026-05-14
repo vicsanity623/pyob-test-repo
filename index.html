@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Updated viewport for better mobile PWA experience -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NotGPT | Hip Hop Ledger</title>
     
@@ -48,7 +47,11 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
-            height: 60px;
+            /* FIX: Pushes header down below the iOS notch */
+            padding-top: max(10px, env(safe-area-inset-top)); 
+            height: auto;
+            min-height: 60px;
+            padding-bottom: 10px;
             background-color: var(--bg-color);
             position: sticky;
             top: 0;
@@ -67,12 +70,13 @@
         .logo-icon {
             width: 30px;
             height: 30px;
-            background: linear-gradient(45deg, #ff0000, #ff8c00);
+            background: linear-gradient(45deg, #ff4500, #ff8c00);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            font-size: 14px;
         }
 
         .search-bar {
@@ -147,6 +151,8 @@
             overflow-y: auto;
             background-color: var(--bg-color);
             padding: 20px;
+            /* FIX: Add bottom padding so last items aren't hidden by iOS home bar */
+            padding-bottom: max(50px, env(safe-area-inset-bottom));
         }
 
         /* --- FILTERS --- */
@@ -179,7 +185,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
-            padding-bottom: 50px;
         }
 
         .card {
@@ -194,27 +199,29 @@
             aspect-ratio: 16/9;
             border-radius: 12px;
             position: relative;
+            background-color: #222;
             background-size: cover;
-            background-position: center;
+            background-position: center top;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
             text-align: center;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
             transition: 0.2s;
+            /* We use an inline style to apply the dark gradient overlay over the image */
         }
 
         .card:hover .thumbnail {
-            border-radius: 0px; /* YouTube hover effect */
+            border-radius: 0px; 
         }
 
         .thumbnail-text {
             font-size: 22px;
             font-weight: 700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+            text-shadow: 2px 2px 8px rgba(0,0,0,1);
+            z-index: 2;
             display: -webkit-box;
-            -webkit-line-clamp: 4;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -228,6 +235,7 @@
             border-radius: 4px;
             font-size: 12px;
             font-weight: 500;
+            z-index: 2;
         }
 
         .card-info {
@@ -245,6 +253,8 @@
             justify-content: center;
             font-weight: bold;
             flex-shrink: 0;
+            background-size: cover;
+            background-position: center;
         }
 
         .meta {
@@ -295,6 +305,7 @@
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .search-bar { margin: 0 10px; flex: 1; }
+            .logo-text-hide { display: none; } /* hide text on mobile to save space */
         }
     </style>
 </head>
@@ -303,14 +314,14 @@
     <header>
         <div class="logo">
             <div class="logo-icon">AE</div>
-            NotGPT
+            <span class="logo-text-hide">NotGPT</span>
         </div>
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Search verified facts...">
             <button onclick="applyFilters()">🔍</button>
         </div>
-        <div class="logo" style="font-size:14px; color:var(--text-secondary)">
-            Ledger Sync: <span id="syncStatus" style="color:var(--verified-color)">● Active</span>
+        <div class="logo logo-text-hide" style="font-size:12px; color:var(--text-secondary)">
+            Sync: <span id="syncStatus" style="color:var(--verified-color)">● Active</span>
         </div>
     </header>
 
@@ -342,57 +353,51 @@
         let fullLedger = [];
         let currentCategory = 'All';
         
-        // LocalStorage DBs
         let favorites = JSON.parse(localStorage.getItem('axiom_favs')) || [];
         let history = JSON.parse(localStorage.getItem('axiom_history')) || [];
 
-        // Generates a deterministic gradient based on the block's SHA-256 hash
         function hashToGradient(hash) {
             const c1 = `#${hash.substring(0, 6)}`;
             const c2 = `#${hash.substring(6, 12)}`;
             return `linear-gradient(135deg, ${c1}, ${c2})`;
         }
 
-        // Relative time formatter (e.g., "3 hours ago")
         function timeSince(dateString) {
             const date = new Date(dateString);
             const seconds = Math.floor((new Date() - date) / 1000);
             let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + " years ago";
+            if (interval > 1) return Math.floor(interval) + " yrs ago";
             interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + " months ago";
+            if (interval > 1) return Math.floor(interval) + " mos ago";
             interval = seconds / 86400;
             if (interval > 1) return Math.floor(interval) + " days ago";
             interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + " hours ago";
+            if (interval > 1) return Math.floor(interval) + " hrs ago";
             interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            if (interval > 1) return Math.floor(interval) + " mins ago";
             return "Just now";
         }
 
-        // Toggle Favorite
         function toggleFav(hash, event) {
-            event.stopPropagation(); // prevent card click
+            event.stopPropagation();
             if (favorites.includes(hash)) {
                 favorites = favorites.filter(h => h !== hash);
             } else {
                 favorites.push(hash);
             }
             localStorage.setItem('axiom_favs', JSON.stringify(favorites));
-            applyFilters(); // Re-render
+            applyFilters();
         }
 
-        // Add to History on click
         function recordHistory(hash) {
             if (!history.includes(hash)) {
                 history.unshift(hash);
-                if (history.length > 50) history.pop(); // Keep last 50
+                if (history.length > 50) history.pop();
                 localStorage.setItem('axiom_history', JSON.stringify(history));
             }
             alert("Block Hash Copied: \n" + hash);
         }
 
-        // Render the UI Grid
         function renderGrid(data) {
             const grid = document.getElementById('videoGrid');
             grid.innerHTML = '';
@@ -404,23 +409,33 @@
 
             data.forEach(block => {
                 const isFav = favorites.includes(block.hash);
-                const bgGradient = hashToGradient(block.hash);
                 
+                // Construct the background. If there's an image_url, overlay a dark gradient so text remains readable
+                const hasImage = block.image_url && block.image_url.length > 5;
+                const bgStyle = hasImage 
+                    ? `background-image: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9)), url('${block.image_url}');` 
+                    : `background: ${hashToGradient(block.hash)};`;
+                
+                // Small channel icon uses image if available, else first letter
+                const channelIcon = hasImage 
+                    ? `<div class="channel-icon" style="background-image: url('${block.image_url}')"></div>`
+                    : `<div class="channel-icon">${block.source.charAt(0)}</div>`;
+
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.onclick = () => recordHistory(block.hash);
                 
                 card.innerHTML = `
-                    <div class="thumbnail" style="background: ${bgGradient};">
+                    <div class="thumbnail" style="${bgStyle}">
                         <div class="thumbnail-text">${block.topic}</div>
                         <div class="source-badge">${block.source}</div>
                     </div>
                     <div class="card-info">
-                        <div class="channel-icon">${block.source.charAt(0)}</div>
+                        ${channelIcon}
                         <div class="meta">
                             <div class="fact-title">${block.fact}</div>
                             <div class="fact-details">
-                                NotGPT <span class="verified-icon">✔</span> • ${timeSince(block.timestamp)}
+                                Axiom Engine <span class="verified-icon">✔</span> • ${timeSince(block.timestamp)}
                             </div>
                             <div class="action-btns">
                                 <button class="action-btn" onclick="toggleFav('${block.hash}', event)">
@@ -435,22 +450,18 @@
             });
         }
 
-        // Filter Logic
         function applyFilters() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             let filtered = fullLedger;
 
-            // Handle Sidebar Categories
             if (currentCategory === 'Favorites') {
                 filtered = filtered.filter(b => favorites.includes(b.hash));
             } else if (currentCategory === 'History') {
-                // Map history hashes back to objects and filter out nulls
                 filtered = history.map(h => fullLedger.find(b => b.hash === h)).filter(b => b);
             } else if (currentCategory !== 'All') {
                 filtered = filtered.filter(b => b.topic.includes(currentCategory));
             }
 
-            // Handle Search Bar
             if (query) {
                 filtered = filtered.filter(b => b.fact.toLowerCase().includes(query) || b.topic.toLowerCase().includes(query));
             }
@@ -461,7 +472,6 @@
         function setCategory(category) {
             currentCategory = category;
             
-            // Update Sidebar UI
             document.querySelectorAll('.sidebar-item').forEach(el => {
                 el.classList.remove('active');
                 if(el.innerText.includes(category) || (category === 'All' && el.innerText.includes('Home'))) {
@@ -469,7 +479,6 @@
                 }
             });
 
-            // Update Top Chips UI
             document.querySelectorAll('.filter-chip').forEach(el => {
                 el.classList.remove('active');
                 if(el.innerText === category || (category === 'All' && el.innerText === 'All')) {
@@ -480,43 +489,20 @@
             applyFilters();
         }
 
-        // Initialize App
         async function init() {
             try {
-                // Fetch the JSON generated by GitHub Actions
+                // Fetch JSON with a timestamp to bust the browser cache
                 const response = await fetch('ledger.json?nocache=' + new Date().getTime());
                 if(!response.ok) throw new Error("Ledger not found");
                 fullLedger = await response.json();
                 applyFilters();
             } catch (err) {
                 console.error("Error fetching ledger:", err);
-                document.getElementById('syncStatus').innerText = 'Offline - No DB found';
+                document.getElementById('syncStatus').innerText = 'Offline';
                 document.getElementById('syncStatus').style.color = 'red';
-                
-                // Fallback Mock Data for immediate UI testing
-                fullLedger = [
-                    {
-                        "timestamp": new Date().toISOString(),
-                        "source": "Wikipedia",
-                        "topic": "Eminem",
-                        "fact": "Eminem's 'The Marshall Mathers LP' sold 1.76 million copies in its first week.",
-                        "prev_hash": "000",
-                        "hash": "a1b2c3d4e5f67890"
-                    },
-                    {
-                        "timestamp": new Date(Date.now() - 86400000).toISOString(),
-                        "source": "HipHopDX RSS",
-                        "topic": "Trending",
-                        "fact": "New documentary on hip hop history tops the charts this week.",
-                        "prev_hash": "a1b2c3d4e5f67890",
-                        "hash": "f6e5d4c3b2a10987"
-                    }
-                ];
-                applyFilters();
             }
         }
 
-        // Listen for enter key in search
         document.getElementById('searchInput').addEventListener('keyup', function(e) {
             if (e.key === 'Enter') applyFilters();
         });
@@ -524,13 +510,9 @@
         // --- PWA Service Worker Registration ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => {
-                        console.log('NotGPT SW registered with scope:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.error('NotGPT SW registration failed:', error);
-                    });
+                navigator.serviceWorker.register('sw.js').catch(error => {
+                    console.error('Axiom Engine SW registration failed:', error);
+                });
             });
         }
 
