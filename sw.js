@@ -6,8 +6,8 @@ const ASSETS_TO_CACHE = [
     './index.html',
     './engine.py',
     './manifest.json',
-    './icon-192x192.png',
-    './icon-512x512.png'
+    './idle192x192.png',
+    './idle512x512.png'
 ];
 
 // Install Event: Cache files
