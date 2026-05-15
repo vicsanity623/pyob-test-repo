@@ -1,5 +1,915 @@
 [
   {
+    "timestamp": "2026-05-15T17:03:27.090915+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "Interscope Records is an American record label based in Santa Monica, California, owned by Universal Music Group through its Interscope Geffen A&M imprint.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "2cfa7f2883e4f98ee9283e013b0891dd617401b5434814ff79d0d241c066f357",
+    "hash": "c917876cb90657f04bdba618112a650bcd47292c8c35ff9950e7a31b31ee35a9"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090909+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "Interscope's first hit records arrived in under a year, and it achieved profitability in 1993.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "35a5361dd38ed901f7cee720f29fcbfba3ccb5055392f8a95dfee291a1be7499",
+    "hash": "2cfa7f2883e4f98ee9283e013b0891dd617401b5434814ff79d0d241c066f357"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090904+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "As a result, Time Warner, then the parent of Warner Music Group, severed ties with Interscope by selling its 50 percent stake back to Field and Iovine for $115 million in 1995.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "7addf04b942b83853720cecaa6f6d30b22f20e5cfafe8fe7ccf44b9bcf73b927",
+    "hash": "35a5361dd38ed901f7cee720f29fcbfba3ccb5055392f8a95dfee291a1be7499"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090899+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "In 1996, 50% of the label was acquired for a reported $200 million by MCA Inc., later known as Universal Music Group.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "4d74ca4b1dd025f6546b81a4b6a9d767da9b298407c9e0b9fc305f5167c7eeb9",
+    "hash": "7addf04b942b83853720cecaa6f6d30b22f20e5cfafe8fe7ccf44b9bcf73b927"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090893+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "Separately, Iovine, who had produced records for U2, Bruce Springsteen, Stevie Nicks, and John Lennon, among others, was trying to raise money to start a label.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "4d97b5932c2804f82f9a26df00d643548f6479dd71161e3f3f9a313453ea210f",
+    "hash": "4d74ca4b1dd025f6546b81a4b6a9d767da9b298407c9e0b9fc305f5167c7eeb9"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090888+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "Interscope's first release was \"Rico Suave\" by Ecuadorian rapper Gerardo in December 1990; the single reached number seven on the Billboard Hot 100 charts in April 1991.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "2f0b2e9e4281693c84ce6da9b6cf7335f68da9343570c01ce9f1cdbb7759abf2",
+    "hash": "4d97b5932c2804f82f9a26df00d643548f6479dd71161e3f3f9a313453ea210f"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090882+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "Primus' Interscope debut, Sailing the Seas of Cheese, was released in May, followed by Marky Mark and the Funky Bunch's Music for the People in July.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "50cfd25df2fb85d4aa5b77fd99afc14247c5ef0f165d66fd37f12bdf6ff0b149",
+    "hash": "2f0b2e9e4281693c84ce6da9b6cf7335f68da9343570c01ce9f1cdbb7759abf2"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090877+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "Two days after first hearing his demo, Whalley signed Tupac Shakur in August 1991, and by November, Interscope released 2Pacalypse Now, Shakur's studio debut.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "19c0218aa357dafa84bdfa8d41792be30d00cba27a63262c4351a28c27055aaa",
+    "hash": "50cfd25df2fb85d4aa5b77fd99afc14247c5ef0f165d66fd37f12bdf6ff0b149"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090872+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "The trooper's family filed a civil suit against Shakur and Interscope, claiming the record's violence-laden lyrics incite \"imminent lawless action\".",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "f1cac0156a101724d33e4e223b1686d0b981e3dd8cb4111208fd70bb339f7494",
+    "hash": "19c0218aa357dafa84bdfa8d41792be30d00cba27a63262c4351a28c27055aaa"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090866+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "Earlier in 1992, Interscope negotiated a $10-million deal with Dr. Dre and Marion \"Suge\" Knight to finance and distribute their label, Death Row Records.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "0f2ca4eef36ac648dd552603ee83c034ee394ee7ac9be1e4e9abc4e73e0dd4f4",
+    "hash": "f1cac0156a101724d33e4e223b1686d0b981e3dd8cb4111208fd70bb339f7494"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090861+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "It was initiated by McClain, who met Dre when he was recording his solo debut, The Chronic.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "b7399f5273aafa7e587b1766f05f0ba9d7191ebabbc7c77447e6289bb82e1976",
+    "hash": "0f2ca4eef36ac648dd552603ee83c034ee394ee7ac9be1e4e9abc4e73e0dd4f4"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090855+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "Original plans had called for the album to be released through Sony, but Sony passed on The Chronic due to \"the crazy things going on around Death Row\" and the contractual status of Dr. Dre.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "8812b1dc93e9a4457c5edc68d0a22e3e984c679119e1bcbb190be5d6a439db49",
+    "hash": "b7399f5273aafa7e587b1766f05f0ba9d7191ebabbc7c77447e6289bb82e1976"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090848+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "The Chronic was released in December 1992.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "794fcea057ec7486fdd303713b3766ec076560cca5fb30d668c0cd240a6e3160",
+    "hash": "8812b1dc93e9a4457c5edc68d0a22e3e984c679119e1bcbb190be5d6a439db49"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090842+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "By the end of the following year, The Chronic had sold almost 3 million copies.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "bdab3bd3f4eb65c185b63521add6a52724372ec008a26af2ae720716880d3b2a",
+    "hash": "794fcea057ec7486fdd303713b3766ec076560cca5fb30d668c0cd240a6e3160"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090835+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop Business",
+    "fact": "Snoop Dogg's debut Doggystyle had sold more than 800,000 copies in its first week alone, and Primus and 4 Non-Blondes had released records which hit the US Top 20.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Interscope_Records.svg/960px-Interscope_Records.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Interscope_Records",
+    "prev_hash": "14c1326aa34ede8cd964061c3e478f77f9830faaf059a161e764783dcc053055",
+    "hash": "bdab3bd3f4eb65c185b63521add6a52724372ec008a26af2ae720716880d3b2a"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090817+00:00",
+    "source": "Google News Hip Hop",
+    "topic": "Trending News",
+    "fact": "Nick Grant Drops New Studio Album \u2018Smile\u2019 with All-Star Guest Roster - The Source Magazine",
+    "image_url": "",
+    "source_url": "https://news.google.com/rss/articles/CBMiekFVX3lxTFB1WU9PTm1tNGZYalI0Y3VFUHg5X1FtTnZ3QmJsdE5vakhrMXJHU1IxWm5INHVISzRXd0JlQy1yQkJVLTFRNTdEVFVnYlcwOXF3X0dTWnp1VlhJcEdJd3IxZUpoUUF1N1I1clU2ZUlDY0U4cEVfcmhIaDhR?oc=5",
+    "prev_hash": "7bb77539f2e46d93ac63d7b3d634718362c66bc8aabe6cffa481ec9e640f2219",
+    "hash": "14c1326aa34ede8cd964061c3e478f77f9830faaf059a161e764783dcc053055"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090796+00:00",
+    "source": "HotNewHipHop",
+    "topic": "Trending News",
+    "fact": "Charlamagne Tha God Explains Kendrick Lamar\u2019s Role In Drake\u2019s New Albums",
+    "image_url": "",
+    "source_url": "https://www.hotnewhiphop.com/995170-charlamagne-tha-god-kendrick-lamar-role-drake-new-albums",
+    "prev_hash": "ff0299561650782f004ecdd0602e3fd6cc17fde3f15a5db0dbf892512f401a14",
+    "hash": "7bb77539f2e46d93ac63d7b3d634718362c66bc8aabe6cffa481ec9e640f2219"
+  },
+  {
+    "timestamp": "2026-05-15T17:03:27.090748+00:00",
+    "source": "Pitchfork",
+    "topic": "Trending News",
+    "fact": "Bladee Reveals New Album Sulfur Surfer",
+    "image_url": "",
+    "source_url": "https://pitchfork.com/news/bladee-reveals-new-album-sulfur-surfer/",
+    "prev_hash": "4419b01a93860d07d59d156aa6f1c68acd2905b69ad6b9ab7ee7d00adc6b9b6f",
+    "hash": "ff0299561650782f004ecdd0602e3fd6cc17fde3f15a5db0dbf892512f401a14"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548961+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "or Biggie Smalls, was an American rapper and songwriter.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "4a3f722aee80c629dc6cd09f16e8188a19626bc382be6cf93c50eb9b3c27b47d",
+    "hash": "4419b01a93860d07d59d156aa6f1c68acd2905b69ad6b9ab7ee7d00adc6b9b6f"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548956+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Wallace was born and raised in Brooklyn, New York City.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "da3bfb9592274c98b4791bbe30612753ad616fb6cfaa22e918d77a0f1c02a3c6",
+    "hash": "4a3f722aee80c629dc6cd09f16e8188a19626bc382be6cf93c50eb9b3c27b47d"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548950+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "His debut studio album, Ready to Die (1994), received acclaim and included the successful singles \"Juicy\", \"Big Poppa\", and \"One More Chance\".",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "ec82b5974c3281d1509922079db63be690a7a60544bf528a4971fe405d08223d",
+    "hash": "da3bfb9592274c98b4791bbe30612753ad616fb6cfaa22e918d77a0f1c02a3c6"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548944+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "In 1995, Wallace was named Rapper of the Year at the Billboard Music Awards, and with his prot\u00e9g\u00e9 group, Junior M.A.F.I.A.\u2014which included longtime friends like Lil' Kim\u2014released the album Conspiracy.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "2ad070384c76f22d80c0ecb34ff79a37ea38d7b1d40cc7d243ad66d382c0509e",
+    "hash": "ec82b5974c3281d1509922079db63be690a7a60544bf528a4971fe405d08223d"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548938+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Wallace's certified U.S. sales exceed 28 million copies, including 21 million albums.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "c7a040cd888e3c903004174aaf8487ba62c854d8939f6ac454262e564a068734",
+    "hash": "2ad070384c76f22d80c0ecb34ff79a37ea38d7b1d40cc7d243ad66d382c0509e"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548932+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Rolling Stone called him the \"greatest rapper that ever lived\", and Billboard named him the greatest rapper of all time in 2015.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "22a11dc1a8b75f447cd13a9aef19ed657efa4448b7a5ee218a7e7674a6c0da17",
+    "hash": "c7a040cd888e3c903004174aaf8487ba62c854d8939f6ac454262e564a068734"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548924+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "== Life and career ==   === 1972\u20131990: Early life ===  Christopher George Latore Wallace was born at Cumberland Hospital in Brooklyn, New York City, on May 21, 1972.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "ea84f4a41f237c6731aa801e5402c808887fb704526dba828ceafc8fc680082c",
+    "hash": "22a11dc1a8b75f447cd13a9aef19ed657efa4448b7a5ee218a7e7674a6c0da17"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548918+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Wallace met Donald Harrison, a saxophonist from New Orleans, and the Techniques worked on their first songs together at Harrison's home studio.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "118407ce8dd7d1bb76a6ccb4a283aab4907fa00d035afe96d81e16f3b1d618d7",
+    "hash": "ea84f4a41f237c6731aa801e5402c808887fb704526dba828ceafc8fc680082c"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548913+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Mister Cee sent the tape to Matteo Capoluongo, an editor at The Source magazine, who featured the track in the \"Unsigned Hype\" section in March 1992, a chart dedicated to showcasing promising rappers.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "1872073ccc93aed64faa036a7976968eec147791f93321f89a443c53fa5fbee0",
+    "hash": "118407ce8dd7d1bb76a6ccb4a283aab4907fa00d035afe96d81e16f3b1d618d7"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548903+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Wallace's first chance to record a solo track for Uptown Records, rather than featuring on another artist's remix, came in 1993 when Combs was creating a song for the soundtrack of the hip-hop comedy Who's the Man?.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "8b20fd984c7cc0be695bc283f483a6a46fda8f8df075586aaa6f5246d1a9605a",
+    "hash": "1872073ccc93aed64faa036a7976968eec147791f93321f89a443c53fa5fbee0"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548896+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "The song was \"Party and Bullshit\", produced by the Brooklyn-based Easy Mo Bee.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "6224d5800777e49cbff76c7dd0b4999b3e282865a6a3db3acaee6bf3536b0f08",
+    "hash": "8b20fd984c7cc0be695bc283f483a6a46fda8f8df075586aaa6f5246d1a9605a"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548889+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "The song was heavily inspired by \"When the Revolution Comes\" by the Last Poets, which uses sarcasm, frustration, and humor to critique young Black people's lack of seriousness in the struggle for equality.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "c597757a2576693e73328f62fdb02322256190b13489815826e00a63eb940d31",
+    "hash": "6224d5800777e49cbff76c7dd0b4999b3e282865a6a3db3acaee6bf3536b0f08"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548882+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "In the track, vocalist Umar Bin Hassan delivers lines like \"niggas will party and bullshit, and party and bullshit\".",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "199c9bb6082b2521f62b15534f7ae46fc22e3250f28339c29372bfe582e75dbe",
+    "hash": "c597757a2576693e73328f62fdb02322256190b13489815826e00a63eb940d31"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548872+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Wallace appeared on Heavy D & the Boyz's 1992 album Blue Funk, on the track \"A Buncha Niggas\".",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "c7d1738063a0e56f6bd6d41bece14ca99cab5ba493ee1f1c9b4ef6287bd7332c",
+    "hash": "199c9bb6082b2521f62b15534f7ae46fc22e3250f28339c29372bfe582e75dbe"
+  },
+  {
+    "timestamp": "2026-05-15T16:47:52.548822+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "In July 1993\u2014a month before Wallace's first child was born\u2014Combs was fired from Uptown Records by his mentor Andre Harrell, resulting in the loss of access to the songs recorded at that time.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/The_Notorious_B.I.G.",
+    "prev_hash": "1dc60369cd3cdbd4f5077d1fa5a08a279444490620e3700ad534e7458c32d841",
+    "hash": "c7d1738063a0e56f6bd6d41bece14ca99cab5ba493ee1f1c9b4ef6287bd7332c"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119680+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "Marshall Bruce Mathers III (born October 17, 1972), known professionally as Eminem, is an American rapper, songwriter, record producer, and record executive.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "25afb59068b3c8038dafd0362612351e30e7467429548d6c79e7452c07d88e3d",
+    "hash": "1dc60369cd3cdbd4f5077d1fa5a08a279444490620e3700ad534e7458c32d841"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119674+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "After the release of his debut album, Infinite (1996), and the extended play Slim Shady EP (1997), Eminem signed with Dr. Dre's Aftermath Entertainment and achieved mainstream popularity with The Slim Shady LP (1999).",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "190ebe9d94b0087594b85c4d531e86da1d7a6c13ceff1ad66feca8e604a56fc4",
+    "hash": "25afb59068b3c8038dafd0362612351e30e7467429548d6c79e7452c07d88e3d"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119668+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "His other ventures include co-founding the record label Shady Records, establishing the Sirius XM Radio channel Shade 45 and opening the restaurant Mom's Spaghetti.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "8d70ab6268544aad3a2a883d3f4b8b3f0aafdb00d4190c62b055c2af9fa87b3e",
+    "hash": "190ebe9d94b0087594b85c4d531e86da1d7a6c13ceff1ad66feca8e604a56fc4"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119662+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "Eminem is the best-selling rapper and one of the best-selling music artists of all time, with estimated sales of over 220 million records.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "1ec2bb3fb3a6e701468e83a97eb02f5f0c6317bb0c127ca6413841b2901ffc6e",
+    "hash": "8d70ab6268544aad3a2a883d3f4b8b3f0aafdb00d4190c62b055c2af9fa87b3e"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119656+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "He is the first musical act to have ten albums consecutively debut at number one on the Billboard 200, and also has five number-one singles on the Billboard Hot 100.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "0304067fde7a2a041d51adc15b9a720447bf0071285bdffde4eaf8470f08806c",
+    "hash": "1ec2bb3fb3a6e701468e83a97eb02f5f0c6317bb0c127ca6413841b2901ffc6e"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119650+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "Eminem is on the list of highest-certified music artists in the United States, with three of his albums and four of his singles certified diamond by the Recording Industry Association of America (RIAA).",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "d73a1617cb132b67e45eebc6eb1bc1026860dff5e0846952280c382f4313e942",
+    "hash": "0304067fde7a2a041d51adc15b9a720447bf0071285bdffde4eaf8470f08806c"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119644+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "Billboard named him the Artist of the 2000s and Rolling Stone ranked him among the greatest artists and greatest songwriters of all time.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "8515032ab26517c1f831f2e56756df11e283c4183f864dbc632f0db8208e1738",
+    "hash": "d73a1617cb132b67e45eebc6eb1bc1026860dff5e0846952280c382f4313e942"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119636+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "== Early life and education == Marshall Bruce Mathers III was born on October 17, 1972, in St. Joseph, Missouri, the only child of Deborah \"Debbie\" Nelson (1955\u20132024) and Marshall Bruce Mathers Jr. (1951\u20132019).",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "341669cc220123e913f95a466dcc17fed7ed1e1588b31feabb1ef06813e568bd",
+    "hash": "8515032ab26517c1f831f2e56756df11e283c4183f864dbc632f0db8208e1738"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119630+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "When he was a child, a bully named D'Angelo Bailey severely injured his head in an assault, an incident that Eminem later recounted on the song \"Brain Damage\".",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "92e62ffd90556dc5013516e95aee51720a6dd86123b9b815df66206921dc6f4b",
+    "hash": "341669cc220123e913f95a466dcc17fed7ed1e1588b31feabb1ef06813e568bd"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119624+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "He heard his first rap song, \"Reckless\", on the Breakin' soundtrack, a gift from Ronnie Polkingharn, Nelson's half-brother and Eminem's uncle.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "db982da2682d812820cce74b538de5a70accab120fb4a3f1b9104c782885a7fe",
+    "hash": "92e62ffd90556dc5013516e95aee51720a6dd86123b9b815df66206921dc6f4b"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119618+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "Eminem snuck into neighboring Osborn High School with friend and fellow rapper Proof for lunchroom freestyle rap battles.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "0ea7d8517b4b147875d21385cd4c95bba84d351d9f615551039bbe9ee29fb559",
+    "hash": "db982da2682d812820cce74b538de5a70accab120fb4a3f1b9104c782885a7fe"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119612+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "When she left to play bingo, he would blast the stereo and write songs.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "7048571d358842f79a38111e9986f1e8e2a974b31f180e95223a2e86b15c0081",
+    "hash": "0ea7d8517b4b147875d21385cd4c95bba84d351d9f615551039bbe9ee29fb559"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119607+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "They released a two track single on cassette in 1995 featuring Proof.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "030ce79dd248da71cc61c313f10ce9dd3cf595eef4cc0b5ccf7705b4e126f434",
+    "hash": "7048571d358842f79a38111e9986f1e8e2a974b31f180e95223a2e86b15c0081"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119601+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "Eminem also made his first music video appearance in 1992 in a song titled, \"Do-Da-Dippity\", by Champtown.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "793fb2a5593a9d54071e06931f2e1a8257d0fcb8a1427984a4239ea90133b937",
+    "hash": "030ce79dd248da71cc61c313f10ce9dd3cf595eef4cc0b5ccf7705b4e126f434"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119595+00:00",
+    "source": "Wikipedia",
+    "topic": "Eminem",
+    "fact": "Later in 1996, Eminem and Proof teamed up with four other rappers to form The Dirty Dozen (D12), who released The Underground E.P.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eminem_2021_Color_Corrected.jpg/960px-Eminem_2021_Color_Corrected.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/Eminem",
+    "prev_hash": "06170cb193867a90c4c68fea802e82219dfcc803915cfe0a16f4147c96bc761b",
+    "hash": "793fb2a5593a9d54071e06931f2e1a8257d0fcb8a1427984a4239ea90133b937"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119582+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "In spite of this, they have sold over ten million units in the United States alone.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "093b6fb83da577b7c2ed6b10d3a958c949e937255ad9f3761a07d787dd8e7fd5",
+    "hash": "06170cb193867a90c4c68fea802e82219dfcc803915cfe0a16f4147c96bc761b"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119577+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "39 on Billboard magazine's Top R&B/Hip-Hop Albums chart, and it was followed by their debut studio album Straight Outta Compton (1989).",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "5990a08fbf84a16bbbe434104cf46ad2e123577612e168be46aff1ffce1f638b",
+    "hash": "093b6fb83da577b7c2ed6b10d3a958c949e937255ad9f3761a07d787dd8e7fd5"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119570+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "The group's debut album marked the beginning of the new gangsta rap era, as the production and social commentary in their lyrics were revolutionary within the genre.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "c390925cee479d8d4d100fdf36b4c0b8e049f2419ebd75020ac62537265be4b4",
+    "hash": "5990a08fbf84a16bbbe434104cf46ad2e123577612e168be46aff1ffce1f638b"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119565+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Niggaz4Life was the first hardcore rap album to reach number one on the Billboard 200 sales charts.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "5bd64c2d0166998dd2483af23f5843c08a5e42d661202eb4ad980f8a2f111f26",
+    "hash": "c390925cee479d8d4d100fdf36b4c0b8e049f2419ebd75020ac62537265be4b4"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119559+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "In 2024 they received the Grammy Lifetime Achievement Award.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "13232aea5a3ea9775c6855579f847107a598c4cedeac1fc35f13e602699e89e8",
+    "hash": "5bd64c2d0166998dd2483af23f5843c08a5e42d661202eb4ad980f8a2f111f26"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119554+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Ruthless released the single \"Panic Zone\" in 1987 with Macola Records, which was later included on the compilation album N.W.A.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "54f015f000c78b6fc34609e04e654ca5221eb638843bdb5355a92f7783db971e",
+    "hash": "13232aea5a3ea9775c6855579f847107a598c4cedeac1fc35f13e602699e89e8"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119548+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Also included was Eazy-E's solo track \"Boyz-n-the-Hood\".",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "cf8438e7bf7d5e2d98929b79a21839fe1aab7b0c58927e3ba8797f7ce6b6b2f9",
+    "hash": "54f015f000c78b6fc34609e04e654ca5221eb638843bdb5355a92f7783db971e"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119541+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "=== Eazy-Duz-It and Straight Outta Compton (1988\u20131989) === N.W.A recorded their official debut, Straight Outta Compton, during the summer and fall of 1988.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "df64132cbdd2cfe9844f6657704a2069a84c78d175f022f47fb26eabe7266f1e",
+    "hash": "cf8438e7bf7d5e2d98929b79a21839fe1aab7b0c58927e3ba8797f7ce6b6b2f9"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119535+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "With its famous opening salvo of three tracks, the group reflected the rising anger of the urban youth.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "2e789d3dda38045347b7059fefa085dd7e356118ccf76f4ee7107af2a51f0895",
+    "hash": "df64132cbdd2cfe9844f6657704a2069a84c78d175f022f47fb26eabe7266f1e"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119529+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "The opening song \"Straight Outta Compton\" introduced the group, \"Fuck tha Police\" protested police brutality and racial profiling, and \"Gangsta Gangsta\" painted the worldview of the inner-city youth.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "54a35a8412fde02fe4a4f8d763c4ffa4fae5573e349b5ea71561f6661f697a1a",
+    "hash": "2e789d3dda38045347b7059fefa085dd7e356118ccf76f4ee7107af2a51f0895"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119523+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Dr. Dre, DJ Yella, and Arabian Prince as HighPowered Productions, composed the beats for each song, with Dre making occasional rapping appearances.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "fb70d2599bff1fad5413cc20f7fa8054751434ab67be350ab8a9685dd53b9789",
+    "hash": "54a35a8412fde02fe4a4f8d763c4ffa4fae5573e349b5ea71561f6661f697a1a"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119517+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "The D.O.C., Ice Cube, and MC Ren wrote most of the group's lyrics, including \"Fuck tha Police\", perhaps the group's most notorious song, which brought them into conflict with various law enforcement agencies.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "d517562380b9e66c31b1dce065169a8e0fbe61f3fd49229aeb77a3091653848b",
+    "hash": "fb70d2599bff1fad5413cc20f7fa8054751434ab67be350ab8a9685dd53b9789"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119510+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Media coverage compensated for the group's lack of airplay, and its album eventually went double platinum.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "e6c72638db8f0af2319378736fc3348bb67e5cde5bbb5ef4d710dd36e4ab563a",
+    "hash": "d517562380b9e66c31b1dce065169a8e0fbe61f3fd49229aeb77a3091653848b"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119504+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Two months before Straight Outta Compton, Eazy-E's solo debut Eazy-Duz-It was released.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "801cd0621fcc622f0a8c0e756b4b35c0a69f8a4b74604403a6c92dbff7156f6a",
+    "hash": "e6c72638db8f0af2319378736fc3348bb67e5cde5bbb5ef4d710dd36e4ab563a"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119499+00:00",
+    "source": "Wikipedia",
+    "topic": "Hip Hop History",
+    "fact": "Straight Outta Compton was released in January 1989.",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nwa-Logo.svg/960px-Nwa-Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "source_url": "https://en.wikipedia.org/wiki/N.W.A",
+    "prev_hash": "85902aad8699e92593d22ce98539a826bd7d017013ab07a07ada400befcc09e7",
+    "hash": "801cd0621fcc622f0a8c0e756b4b35c0a69f8a4b74604403a6c92dbff7156f6a"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119493+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "The Billboard 200 is a record chart ranking the 200 most popular music albums and EPs in the United States.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "d49828cfd10c3ae7c752888a87ebe1465e7904818c6e42f979cdd00a759244d0",
+    "hash": "85902aad8699e92593d22ce98539a826bd7d017013ab07a07ada400befcc09e7"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119488+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "It is published weekly by Billboard magazine to convey the popularity of an artist or groups of artists.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "5802f00c274dc57880290178624ea9d2238f9016ad687bf0f825f4a9fd956427",
+    "hash": "d49828cfd10c3ae7c752888a87ebe1465e7904818c6e42f979cdd00a759244d0"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119482+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "Sometimes, a recording act is remembered for its \"number ones\" that outperformed all other albums during at least one week.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "39bf770ff89ce1d0c5d87853d01b3842f8e80e078696fe8017203b4f64dc5d50",
+    "hash": "5802f00c274dc57880290178624ea9d2238f9016ad687bf0f825f4a9fd956427"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119475+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "Its previous names include the Billboard Top LPs (1961\u20131972), Billboard Top LPs & Tapes (1972\u20131984), Billboard Top 200 Albums (1984\u20131985), Billboard Top Pop Albums (1985\u20131991), and Billboard 200 Top Albums (1991\u20131992).",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "d9ef9cbc8214ef41ca325d4a7abff59b24b927bfabe3bc238fb9ceab6a949b86",
+    "hash": "39bf770ff89ce1d0c5d87853d01b3842f8e80e078696fe8017203b4f64dc5d50"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119468+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "The chart's streaming schedule is also tracked from Friday to Thursday.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "78cc0110de05c7d0909533c8b50809961eddea03a3efdde0e0cc47ffa8e298fa",
+    "hash": "d9ef9cbc8214ef41ca325d4a7abff59b24b927bfabe3bc238fb9ceab6a949b86"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119463+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "Digital downloads of albums are included in Billboard 200 tabulation.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "dabbcf3d189d629a9f592fca397d478bc0d55f1a16593be01be841495216fe81",
+    "hash": "78cc0110de05c7d0909533c8b50809961eddea03a3efdde0e0cc47ffa8e298fa"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119457+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "YouTube removed their streaming data from Billboard's methodology in late 2025.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "cdfb0b571560ebe8bbbe3391f00658ead39f7d8e518343ab32908b256c119d7d",
+    "hash": "dabbcf3d189d629a9f592fca397d478bc0d55f1a16593be01be841495216fe81"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119452+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "== History == Billboard began an album chart in 1945.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "dce5c5974291b2d617a60ced451d889da46d9fb1ea1b0c6290ab78c8fef4779f",
+    "hash": "cdfb0b571560ebe8bbbe3391f00658ead39f7d8e518343ab32908b256c119d7d"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119446+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "Beginning on May 25, 1959, Billboard split the ranking into two charts: \"Best-Selling Stereophonic LPs\" for stereo albums (30 positions) and \"Best-Selling Monophonic LPs\" for mono albums (50 positions).",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "5353242cb680b0f0e86c65e95186c562ac76d690dbc17933b1baf444c5a3f10f",
+    "hash": "dce5c5974291b2d617a60ced451d889da46d9fb1ea1b0c6290ab78c8fef4779f"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119440+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "=== Catalog albums === In 1960, Billboard began concurrently publishing album charts that ranked sales of older or mid-priced titles.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "a9f9461256b5d1a6b358bc8d32d8c03a6bca18fa29186c03af68a0c7259301d6",
+    "hash": "5353242cb680b0f0e86c65e95186c562ac76d690dbc17933b1baf444c5a3f10f"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119434+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "This list continued to be published until the consolidated \"Top LPs\" chart debuted in 1963.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "9c47e0017f7ed0e9d9d2d049019b5965b3dd2211fa8e548618c8291337d3d27a",
+    "hash": "a9f9461256b5d1a6b358bc8d32d8c03a6bca18fa29186c03af68a0c7259301d6"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119428+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "In 1982, Billboard began publishing a \"Midline Albums\" chart (alternatively titled \"Midline LPs\"), which ranked older or mid-priced titles.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "3da8f1bb588978f3a7cac6f85e3a005f344a3c3b3ba2e279a3f190d4d3db4234",
+    "hash": "9c47e0017f7ed0e9d9d2d049019b5965b3dd2211fa8e548618c8291337d3d27a"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119422+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "On May 25, 1991, Billboard premiered the \"Top Pop Catalog Albums\" chart, the criteria for which were albums that were more than 18 months old and had fallen below no.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "49d32eac207e4df6dd33a8f9a32f743bb14d6fbe088035baee31e4d06ef4064d",
+    "hash": "3da8f1bb588978f3a7cac6f85e3a005f344a3c3b3ba2e279a3f190d4d3db4234"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119416+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "\"Both Dark Side of the Moon and The Wall should be in the Billboard Top 200,\" said former Pink Floyd member Roger Waters in 1992.",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "94c78792f7c01139889093e64066eb8e672613485ae749eba3be2f61e7661e0a",
+    "hash": "49d32eac207e4df6dd33a8f9a32f743bb14d6fbe088035baee31e4d06ef4064d"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119409+00:00",
+    "source": "Wikipedia",
+    "topic": "Charts",
+    "fact": "\"The Wall still does anything up to four million each year...",
+    "image_url": "",
+    "source_url": "https://en.wikipedia.org/wiki/Billboard_200",
+    "prev_hash": "b985b64df1d34add4b895d4cf866cdd5e97993fbe2591ec1a2dccb961aa3031f",
+    "hash": "94c78792f7c01139889093e64066eb8e672613485ae749eba3be2f61e7661e0a"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119401+00:00",
+    "source": "Google News Hip Hop",
+    "topic": "Trending News",
+    "fact": "In all, he released 43 tracks across all three albums. #drake #iceman #newmusic #habibti #maidofhonour - facebook.com",
+    "image_url": "",
+    "source_url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxPUjlJSGFCeGZlQTliUGdVZldwQmstcjFENWZvMWk1TndVZy11VHhUN202dXk3Z3hwOXNsLVNWUGZGYU5NcjJmdWtWWloxTDUtOGhYY09zVnBIeng5TDZUSmNLMWJZTzZ3SHo4RmVWbFlHXzlCaGRZLThmSmloRUQzRVN0dGdyVzk0ZDZlTDE3Z2cxVTkyYW14Ml96TU14S2VIVUNZR0xrV2RnZnh3eUI2TjNoZkVYclZacWtPMEpEbWw1d0hjTDBNRFEyUTB2SzFBWndrYnd2bFFmUQ?oc=5",
+    "prev_hash": "711257c97d336fe4263e3392f9cdff22c9d0ed24b48abd1a5c1d25f989dcbcde",
+    "hash": "b985b64df1d34add4b895d4cf866cdd5e97993fbe2591ec1a2dccb961aa3031f"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119393+00:00",
+    "source": "Google News Hip Hop",
+    "topic": "Trending News",
+    "fact": "Today In Hip Hop History: Killer Mike Dropped His Fifth LP \u2018R.A.P. Music\u2019 14 Years Ago - The Source Magazine",
+    "image_url": "",
+    "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPOEw3eW9QN0pWOUpPX0VXNlVDVjlkaGpfN1dZN1cwcVlPTTlrb1ZqVGZ3emxfRFgzM3JlenpYc05BYmVwZW9RbVVqQ3FoY0pPdGhqZGhudlJnbW9CVjg5VHpSUXNKY3I2bnZNLVRXa1VsLWxxRi10ajhFUnUtQU5FNWYzaElJM040YWNnaGVuQWkyS1V4LXc4N2JnTjMxQjBQRDFuNDEyQWlRNEQ0eW02ZVNEUnlBek0?oc=5",
+    "prev_hash": "86124f416295cdcd46d8c8a1a592fce3f739353e27031d792977a964631994e7",
+    "hash": "711257c97d336fe4263e3392f9cdff22c9d0ed24b48abd1a5c1d25f989dcbcde"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119387+00:00",
+    "source": "Google News Hip Hop",
+    "topic": "Trending News",
+    "fact": "Drake \u2013 Iceman - clashmusic.com",
+    "image_url": "",
+    "source_url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9YRUJPY3Zuc1locS1QN1FSenlYUlBlcE9teVppdS0xQnFudlRBb0hZMjhaYTBad2RueVpQbUFCOGNWWENENFI4X0FsNjRxeExxLUlUdTU5OHNRNnd6?oc=5",
+    "prev_hash": "4fb0b5d2634dd787a5f63b2e9962e9373e484d20e5b6e7060bceab196e9536b8",
+    "hash": "86124f416295cdcd46d8c8a1a592fce3f739353e27031d792977a964631994e7"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119377+00:00",
+    "source": "Google News Hip Hop",
+    "topic": "Trending News",
+    "fact": "Sideshow disses JPEGMAFIA on new song \u201cEXPERIMENTAL RAP (BLACK CROSS+)\u201d - The Fader",
+    "image_url": "",
+    "source_url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxNZ0txR0N4V09LQmFEWTlPWWstMU1QSTJiX2twdTVjUE9Ca0JCVkJtQThHbVY2RGJMdDlpc0Q2TGVVMUVscVBodzZCRTRnQ05qcUl6TzR6TVlHV2pDeDBLMW44b0lJWXNnNmpvVFJKcE15RzBvVU1tdnRBdkVzYk5ocUJ0TS1Hd0tJUnowUE1CQkZPUQ?oc=5",
+    "prev_hash": "c60545bf3da757b3f9722aa33f3a36dbfb19cf10f793cbec27103a4ea44fc419",
+    "hash": "4fb0b5d2634dd787a5f63b2e9962e9373e484d20e5b6e7060bceab196e9536b8"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119369+00:00",
+    "source": "Google News Hip Hop",
+    "topic": "Trending News",
+    "fact": "Can Drake\u2019s New Album End Rap\u2019s Cold Streak? - WSJ",
+    "image_url": "",
+    "source_url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxNVWY3OGpOQ1BERHFxV2V1UFJRM0dNdWdrQlRvWWtIVHlZWGUwZWpsZk1DenhOZ2tfRWV2Zm9ORlVPcVNBVUtuSFVHZXc5UzNiUnhZVWZwbEJfM0pVdEZKRGFSekFmYnJBYThiOUxYeTBrdzdTUTdZSlozN1dGbXFlWjBwTlNaUjBmRnNQLXFB?oc=5",
+    "prev_hash": "191861f72f9f612da5226808b2438087caf43e5acaccd0b280f8a378063987ca",
+    "hash": "c60545bf3da757b3f9722aa33f3a36dbfb19cf10f793cbec27103a4ea44fc419"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119359+00:00",
+    "source": "Google News Hip Hop",
+    "topic": "Trending News",
+    "fact": "#TSRReactionz: #TSRPolitics\u2014Despite the current state of the world, it looks like the #WhiteHouse wanted in on talks surrounding #Drake\u2019s new album \u2018Iceman.\u2019 On Friday, a graphic mimicking Drake\u2019s album cover was shared on the White House\u2019s official so - instagram.com",
+    "image_url": "",
+    "source_url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE1aMlVhQUp1b1U3TkpuTmREbHY1cDhfb0U3NjZXTmhEa2JYYmRKZ0hqLTdoZDBtcjlNTmVtTmJiZVpySHZCbUwtcFh5V3BqOTZZWXc?oc=5",
+    "prev_hash": "e288b1663e9832869d2cc87390c9a8097bb675c76f430ae251f7d2028cac7c24",
+    "hash": "191861f72f9f612da5226808b2438087caf43e5acaccd0b280f8a378063987ca"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119350+00:00",
+    "source": "Rolling Stone",
+    "topic": "Trending News",
+    "fact": "Inside Anderson .Paak\u2019s K-Pop Album: \u2018This is More Than a Soundtrack\u2019",
+    "image_url": "",
+    "source_url": "https://www.rollingstone.com/music/music-features/inside-anderson-paak-k-pop-album-1235563473/",
+    "prev_hash": "7140a9c29c39f78f61d2e86eee2309f7536a078a3d5054e0f097bbd6386cc32f",
+    "hash": "e288b1663e9832869d2cc87390c9a8097bb675c76f430ae251f7d2028cac7c24"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119343+00:00",
+    "source": "Rolling Stone",
+    "topic": "Trending News",
+    "fact": "Before Drake\u2019s Ice Block Challenge: 10 Wild Album Release Stunts, From U2 to Beyonce to Kanye West",
+    "image_url": "",
+    "source_url": "https://www.rollingstone.com/music/music-lists/best-album-release-stunts-u2-beyonce-radiohead-1235563330/",
+    "prev_hash": "8d0b015ce4f415cc796eaf95d800a50bf37b66274c089a73b8386411edeb8841",
+    "hash": "7140a9c29c39f78f61d2e86eee2309f7536a078a3d5054e0f097bbd6386cc32f"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119334+00:00",
+    "source": "HotNewHipHop",
+    "topic": "Trending News",
+    "fact": "Drake\u2019s Three New Albums Lead To Uproarious Fan Reactions",
+    "image_url": "",
+    "source_url": "https://www.hotnewhiphop.com/995157-drake-three-new-albums-fan-reactions",
+    "prev_hash": "7ea858195598c15713f251ec10f0896cb005db12909bceda09321d76e37d7e9e",
+    "hash": "8d0b015ce4f415cc796eaf95d800a50bf37b66274c089a73b8386411edeb8841"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119326+00:00",
+    "source": "HotNewHipHop",
+    "topic": "Trending News",
+    "fact": "Drake\u2019s Bound To Break Yet Another Billboard Record With Three Album Releases",
+    "image_url": "",
+    "source_url": "https://www.hotnewhiphop.com/995140-drake-iceman-habibti-maid-of-honour-billboard-200-projection",
+    "prev_hash": "97ff4eeae0ca5adc424560403bf9fd8d7297d495a29ad8e97252bc95cea46a67",
+    "hash": "7ea858195598c15713f251ec10f0896cb005db12909bceda09321d76e37d7e9e"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119316+00:00",
+    "source": "HotNewHipHop",
+    "topic": "Trending News",
+    "fact": "Drake\u2019s Three New Albums Make Fans Question His Record Label Deal",
+    "image_url": "",
+    "source_url": "https://www.hotnewhiphop.com/995132-drake-three-new-albums-fans-question-record-label-deal",
+    "prev_hash": "1fd624813f79c555b9a565edb8f4188d9a44d7cf182621695da13118a43f3d8a",
+    "hash": "97ff4eeae0ca5adc424560403bf9fd8d7297d495a29ad8e97252bc95cea46a67"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119303+00:00",
+    "source": "HotNewHipHop",
+    "topic": "Trending News",
+    "fact": "Drake Makes Numerous \u201cICEMAN\u201d Music Videos Available On YouTube",
+    "image_url": "",
+    "source_url": "https://www.hotnewhiphop.com/995124-drake-seven-iceman-music-videos",
+    "prev_hash": "0649bc9ba53bc466be484d173aedbaafb2f96a1153982f49e5f598a781e986fd",
+    "hash": "1fd624813f79c555b9a565edb8f4188d9a44d7cf182621695da13118a43f3d8a"
+  },
+  {
+    "timestamp": "2026-05-15T16:32:26.119251+00:00",
+    "source": "Pitchfork",
+    "topic": "Trending News",
+    "fact": "15 New Albums You Should Listen to Now: Kevin Morby, Drake, Smerz, and More",
+    "image_url": "",
+    "source_url": "https://pitchfork.com/news/15-new-albums-you-should-listen-to-now-kevin-morby-drake-smerz-and-more/",
+    "prev_hash": "4f44aa0084c4e9a950ac2e0886e7021efbe1d0dc5d48cceaa127d7591a597c9d",
+    "hash": "0649bc9ba53bc466be484d173aedbaafb2f96a1153982f49e5f598a781e986fd"
+  },
+  {
     "timestamp": "2026-05-15T13:02:14.721689+00:00",
     "source": "Wikipedia",
     "topic": "Eminem",
