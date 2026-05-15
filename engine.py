@@ -5,14 +5,14 @@ import nltk  # type: ignore
 from datetime import datetime, timezone
 import time
 import random
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Tuple
 from ledger_manager import load_ledger, save_ledger
 
 nltk.download("punkt", quiet=True)
 nltk.download("punkt_tab", quiet=True)
 
 LEDGER_FILE: str = "ledger.json"
-MAX_RUNTIME_SEC: int = (45 * 60)
+MAX_RUNTIME_SEC: int = 45 * 60
 
 HEADERS: Dict[str, str] = {
     "User-Agent": "AxiomEngineBot/2.0 (https://github.com/; axiom-engine@example.com) python-requests/2.x"
@@ -39,11 +39,14 @@ WIKI_SEEDS: List[Tuple[str, str]] = [
     ("RIAA_certification", "Industry Stats"),
     ("Grammy_Award_for_Best_Rap_Album", "Awards"),
     ("N.W.A", "Hip Hop History"),
-    ("Jay-Z", "Hip Hop History")
+    ("Jay-Z", "Hip Hop History"),
 ]
 
 RSS_TARGETS: List[Tuple[str, str]] = [
-    ("Google News Hip Hop", "https://news.google.com/rss/search?q=hip+hop+music+news&hl=en-US&gl=US&ceid=US:en"),
+    (
+        "Google News Hip Hop",
+        "https://news.google.com/rss/search?q=hip+hop+music+news&hl=en-US&gl=US&ceid=US:en",
+    ),
     ("HipHopDX", "https://hiphopdx.com/rss/news"),
     ("Billboard Hip-Hop", "https://www.billboard.com/c/music/rb-hip-hop/feed/"),
     ("Rolling Stone", "https://www.rollingstone.com/music/feed/"),
@@ -143,8 +146,10 @@ def run_engine_cycle(ledger: List[Dict[str, str]]) -> Tuple[int, List[Dict[str, 
 
     # Discovery Mode: Pick 4 random targets
     current_wiki_batch = random.sample(WIKI_SEEDS, k=min(4, len(WIKI_SEEDS)))
-    
-    print(f"Scraping Wikipedia (Discovery Mode: {', '.join([t[0] for t in current_wiki_batch])})...")
+
+    print(
+        f"Scraping Wikipedia (Discovery Mode: {', '.join([t[0] for t in current_wiki_batch])})..."
+    )
     for title, topic in current_wiki_batch:
         facts, source, img_url, src_url = fetch_wikipedia_facts(title, topic)
         for fact in facts:
@@ -165,7 +170,16 @@ def run_engine_cycle(ledger: List[Dict[str, str]]) -> Tuple[int, List[Dict[str, 
             feed = feedparser.parse(rss_url, agent=HEADERS["User-Agent"])
             for entry in feed.entries[:15]:
                 title = entry.get("title", "")
-                discovery_keywords = ["eminem", "rap", "hip hop", "dre", "album", "music", "chart", "concert"]
+                discovery_keywords = [
+                    "eminem",
+                    "rap",
+                    "hip hop",
+                    "dre",
+                    "album",
+                    "music",
+                    "chart",
+                    "concert",
+                ]
                 if any(kw in title.lower() for kw in discovery_keywords):
                     img_url = ""
                     src_url = entry.get("link", "")
