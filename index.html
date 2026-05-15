@@ -497,13 +497,13 @@
         }
 
         // Clipboard copy functionality with brief toast feedback
-        document.getElementById('copyHashBtn').addEventListener('click', function (event: Event) {
+        document.getElementById('copyHashBtn').addEventListener('click', function (event) {
             event.stopPropagation();
             const hashElement = document.getElementById('wHash');
             if (hashElement) {
-                const hash: string = hashElement.innerText;
+                const hash = hashElement.innerText;
                 navigator.clipboard.writeText(hash).then(() => {
-                    const toast: HTMLDivElement = document.createElement('div');
+                    const toast = document.createElement('div');
                     toast.textContent = 'Hash copied to clipboard!';
                     toast.style.position = 'fixed';
                     toast.style.bottom = 'calc(20px + env(safe-area-inset-bottom))';
