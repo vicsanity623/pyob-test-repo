@@ -19,8 +19,10 @@ def load_ledger() -> List[Dict[str, str]]:
 
 
 def save_ledger(ledger: List[Dict[str, str]]) -> None:
-    with open(LEDGER_FILE, "w") as f:
+    temp_file: str = f"{LEDGER_FILE}.tmp"
+    with open(temp_file, "w") as f:
         json.dump(ledger, f, indent=2)
+    os.replace(temp_file, LEDGER_FILE)
 
 
 def flag_block(block_hash: str, status: str) -> bool:
