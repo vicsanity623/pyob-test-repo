@@ -62,6 +62,32 @@ def get_previous_hash(ledger: List[Dict[str, str]]) -> str:
     return ledger[0]["hash"]
 
 
+def verify_ledger_integrity(ledger: List[Dict[str, str]]) -> bool:
+    """
+    Validates the integrity of the ledger by re-calculating hashes
+    and checking the link between blocks.
+    """
+    for i in range(len(ledger) - 1):
+        current_block: Dict[str, str] = ledger[i]
+        next_block: Dict[str, str] = ledger[i + 1]
+
+        payload: str = (
+            f"{current_block['timestamp']}|{current_block['source']}|"
+            f"{current_block['topic']}|{current_block['fact']}|"
+            f"{current_block['image_url']}|{current_block['source_url']}|"
+            f"{current_block['prev_hash']}"
+        )
+        calculated_hash: str = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+        if calculated_hash != current_block["hash"]:
+            return False
+
+        if current_block["prev_hash"] != next_block["hash"]:
+            return False
+
+    return True
+
+
 def create_block(
     fact_text: str,
     source: str,
