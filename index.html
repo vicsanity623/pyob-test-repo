@@ -326,8 +326,7 @@
                         <p>This block has been cryptographically sealed and verified by the Axiom Engine ledger.</p>
                         <div class="crypto-box">
                             <strong style="color:var(--text-secondary)">Block Hash:</strong><br>
-                            <span id="wHash" style="color:var(--verified-color)">hash</span>
-                            <button id="copyHashBtn" class="watch-btn" style="margin-top:10px; padding: 5px 10px; font-size: 12px;">ð Copy Hash</button><br><br>
+                            <span id="wHash" style="color:var(--verified-color)">hash</span><br><br>
                             <strong style="color:var(--text-secondary)">Previous Hash:</strong><br>
                             <span id="wPrevHash">prev</span>
                         </div>
@@ -496,35 +495,8 @@
             applyFilters(); // refresh grid to show read history
         }
 
-        // Clipboard copy functionality with brief toast feedback
-        document.getElementById('copyHashBtn').addEventListener('click', function (event) {
-            event.stopPropagation();
-            const hashElement = document.getElementById('wHash');
-            if (hashElement) {
-                const hash = hashElement.innerText;
-                navigator.clipboard.writeText(hash).then(() => {
-                    const toast = document.createElement('div');
-                    toast.textContent = 'Hash copied to clipboard!';
-                    toast.style.position = 'fixed';
-                    toast.style.bottom = 'calc(20px + env(safe-area-inset-bottom))';
-                    toast.style.left = '50%';
-                    toast.style.transform = 'translateX(-50%)';
-                    toast.style.background = 'rgba(0,0,0,0.8)';
-                    toast.style.color = '#fff';
-                    toast.style.padding = '8px 16px';
-                    toast.style.borderRadius = '8px';
-                    toast.style.zIndex = '200';
-                    toast.style.fontSize = '14px';
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 2000);
-                }).catch((err: Error) => {
-                    console.error('Failed to copy hash:', err);
-                });
-            }
-        });
-
         // --- GRID RENDERING ---
-        function renderGrid(data: any[]) {
+        function renderGrid(data) {
             const grid = document.getElementById('videoGrid');
             grid.innerHTML = '';
 
