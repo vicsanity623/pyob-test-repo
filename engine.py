@@ -10,6 +10,7 @@ from ledger_manager import load_ledger, save_ledger
 
 nltk.download("punkt", quiet=True)
 nltk.download("punkt_tab", quiet=True)
+nltk.download("punkt_tab", quiet=True)
 
 LEDGER_FILE: str = "ledger.json"
 MAX_RUNTIME_SEC: int = 45 * 60
