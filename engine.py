@@ -8,12 +8,11 @@ import random
 from typing import List, Dict, Any
 from ledger_manager import load_ledger, save_ledger
 
-
-REDDIT_SUBS = ["UFOs", "UAP", "UFObelievers", "UFOdocumentaries"]
+REDDIT_SUBS = ["UFOs", "UAP", "Aliens", "UFObelievers", "UFOdocumentaries", "UFOscience", "Mufon", "Experiencers"]
 FOURCHAN_BOARD = "x"
 
 POSITIVE_KEYWORDS = ["ufo", "uap", "orb", "saucer", "tic tac", "tic-tac", "triangle", "sighting", "craft", "phenomenon"]
-NEGATIVE_KEYWORDS = ["furry", "psyop", "meme", "fake", "debunk", "cgi", "vfx", "blender", "movie", "game", "art", "drawing", "tattoo", "fiction", "joke", "project blue beam"]
+NEGATIVE_KEYWORDS = ["furry", "ai generated", "aiart", "ai", "deepfake", "psyop", "meme", "fake", "debunk", "cgi", "vfx", "blender", "movie", "game", "art", "drawing", "tattoo", "fiction", "joke", "project blue beam"]
 
 def get_previous_hash(ledger: List[Dict[str, Any]]) -> str:
     if not ledger:
@@ -22,10 +21,11 @@ def get_previous_hash(ledger: List[Dict[str, Any]]) -> str:
 
 def create_block(
     source: str, author: str, title: str, description: str,
-    media_url: str, thumbnail_url: str, media_type: str, source_url: str, prev_hash: str
+    media_url: str, thumbnail_url: str, media_type: str, source_url: str, prev_hash: str, score: int = 0
 ) -> Dict[str, Any]:
     timestamp = datetime.now(timezone.utc).isoformat()
-    payload = f"{timestamp}|{source}|{title}|{media_url}|{prev_hash}"
+    # We include the score in the hash payload so popularity is also cryptographically sealed
+    payload = f"{timestamp}|{source}|{title}|{media_url}|{score}|{prev_hash}"
     block_hash = hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
     return {
@@ -40,6 +40,7 @@ def create_block(
         "source_url": source_url,
         "prev_hash": prev_hash,
         "hash": block_hash,
+        "score": score
     }
 
 def is_high_quality(title: str, text: str) -> bool:
@@ -50,8 +51,6 @@ def is_high_quality(title: str, text: str) -> bool:
 
 def fetch_reddit_sightings() -> List[Dict[str, Any]]:
     results = []
-    
-    # Initialize a session
     session = requests.Session()
     session.headers.update({
         "User-Agent": "Mozilla/5.0 (Android 13; Mobile; rv:109.0) Gecko/114.0 Firefox/114.0",
@@ -61,7 +60,6 @@ def fetch_reddit_sightings() -> List[Dict[str, Any]]:
         "DNT": "1",
     })
 
-    # Warm up: Hit the reddit home page to get session cookies
     try:
         session.get("https://www.reddit.com/", timeout=10)
         time.sleep(random.uniform(2, 4))
@@ -70,13 +68,10 @@ def fetch_reddit_sightings() -> List[Dict[str, Any]]:
 
     for sub in REDDIT_SUBS:
         print(f"Scraping Reddit: /r/{sub} (Hot)...")
-        
-        # We try the standard JSON endpoint but with a randomized cache-buster
         url = f"https://www.reddit.com/r/{sub}/hot.json?limit=25&raw_json=1&t={int(time.time())}"
         
         try:
             res = session.get(url, timeout=15)
-            
             if res.status_code != 200:
                 print(f"⚠️ Reddit blocked request for /r/{sub} (Status: {res.status_code})")
                 continue
@@ -121,12 +116,13 @@ def fetch_reddit_sightings() -> List[Dict[str, Any]]:
                         "media_url": media_url,
                         "thumbnail_url": thumbnail_url,
                         "media_type": media_type,
-                        "source_url": f"https://reddit.com{p.get('permalink', '')}"
+                        "source_url": f"https://reddit.com{p.get('permalink', '')}",
+                        "score": p.get("score", 0) # <--- SECTION 1: Extracting score from Reddit
                     })
         except Exception as e:
             print(f"⚠️ Error parsing /r/{sub}: {e}")
         
-        time.sleep(random.uniform(4, 7)) # Be extra polite to avoid IP flags
+        time.sleep(random.uniform(4, 7))
         
     return results
 
@@ -159,7 +155,8 @@ def fetch_4chan_sightings() -> List[Dict[str, Any]]:
                         "media_url": media_url,
                         "thumbnail_url": thumbnail_url,
                         "media_type": media_type,
-                        "source_url": f"https://boards.4channel.org/{FOURCHAN_BOARD}/thread/{thread.get('no')}"
+                        "source_url": f"https://boards.4channel.org/{FOURCHAN_BOARD}/thread/{thread.get('no')}",
+                        "score": 0 # <--- SECTION 2: 4chan has no upvotes, so we use 0
                     })
     except Exception as e:
         print(f"⚠️ Error with 4chan: {e}")
@@ -176,12 +173,18 @@ def build_uap_ledger() -> None:
     for sighting in new_sightings:
         if sighting["media_url"] in existing_urls: continue
             
+        # SECTION 3: Passing the score from the dictionary into the create_block function
         block = create_block(
-            source=sighting["source"], author=sighting["author"],
-            title=sighting["title"], description=sighting["description"],
-            media_url=sighting["media_url"], thumbnail_url=sighting["thumbnail_url"],
-            media_type=sighting["media_type"], source_url=sighting["source_url"],
-            prev_hash=get_previous_hash(ledger)
+            source=sighting["source"], 
+            author=sighting["author"],
+            title=sighting["title"], 
+            description=sighting["description"],
+            media_url=sighting["media_url"], 
+            thumbnail_url=sighting["thumbnail_url"],
+            media_type=sighting["media_type"], 
+            source_url=sighting["source_url"],
+            prev_hash=get_previous_hash(ledger),
+            score=sighting.get("score", 0) # <--- Grab the score here
         )
         ledger.insert(0, block)
         existing_urls.add(sighting["media_url"])
