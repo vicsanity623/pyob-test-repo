@@ -56,7 +56,6 @@ def fetch_reddit_sightings() -> List[Dict[str, Any]]:
     for sub in REDDIT_SUBS:
         print(f"Scraping Reddit: /r/{sub} (Hot)...")
         
-        # raw_json=1 prevents Reddit from sending broken &amp; links
         url = f"https://www.reddit.com/r/{sub}/hot.json?limit=30&raw_json=1"
         try:
             res = requests.get(url, headers=HEADERS, timeout=10)
@@ -70,7 +69,6 @@ def fetch_reddit_sightings() -> List[Dict[str, Any]]:
                 p = post["data"]
                 title = p.get("title", "")
                 
-                # STRICT QUALITY CONTROL: Must have at least 50 upvotes
                 if p.get("score", 0) < 50:
                     continue
                 
@@ -81,13 +79,11 @@ def fetch_reddit_sightings() -> List[Dict[str, Any]]:
                 thumbnail_url = ""
                 media_type = ""
                 
-                # 1. Check for Reddit Hosted Video
                 if p.get("is_video") and p.get("media") and p["media"].get("reddit_video"):
                     media_url = p["media"]["reddit_video"].get("fallback_url", "")
                     thumbnail_url = p.get("thumbnail", "")
                     media_type = "video"
                 
-                # 2. Check for High-Res Image or GIF
                 elif p.get("preview") and p["preview"].get("images"):
                     img_data = p["preview"]["images"][0]
                     media_url = img_data["source"]["url"]
@@ -121,8 +117,7 @@ def fetch_reddit_sightings() -> List[Dict[str, Any]]:
         except Exception as e:
             print(f"⚠️ Error parsing /r/{sub}: {e}")
         
-        # Polite delay to respect API limits
-        time.sleep(3)
+        time.sleep(6)
     return results
 
 def fetch_4chan_sightings() -> List[Dict[str, Any]]:
@@ -137,7 +132,6 @@ def fetch_4chan_sightings() -> List[Dict[str, Any]]:
                 title = thread.get("sub", "")
                 comment = re.sub(r'<[^>]+>', ' ', thread.get("com", ""))
                 
-                # Quality control: Must have replies to be relevant
                 if thread.get("replies", 0) < 5:
                     continue
 
