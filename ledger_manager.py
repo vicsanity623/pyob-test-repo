@@ -16,8 +16,8 @@ def load_ledger() -> List[Dict[str, Any]]:
     return []
 
 def save_ledger(ledger: List[Dict[str, Any]]) -> None:
-    # Cap at 2000 sightings to keep the JSON payload fast for the frontend browser
-    optimized_ledger = ledger[:2000]
+    # Cap at 5000 sightings to keep the JSON payload fast for the frontend browser
+    optimized_ledger = ledger[:5000]
     with open(LEDGER_FILE, "w") as f:
         json.dump(optimized_ledger, f, indent=2)
 

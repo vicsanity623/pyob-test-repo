@@ -277,17 +277,36 @@
             overflow: hidden;
             border: 1px solid #333;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 300px;
             max-height: 70vh;
+            position: relative;
         }
 
         .media-player-wrapper video,
         .media-player-wrapper img {
             max-width: 100%;
-            max-height: 70vh;
+            max-height: 65vh;
             object-fit: contain;
+            display: block;
+        }
+
+        .audio-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.75);
+            border: 1px solid #333;
+            color: var(--accent-color);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            transition: opacity 0.3s;
         }
 
         .post-details {
@@ -544,34 +563,101 @@
             const safeThumbUrl = block.thumbnail_url ? decodeEntities(block.thumbnail_url) : '';
 
             if (block.media_type === 'video') {
-                const safeAudioUrl = block.audio_url ? decodeEntities(block.audio_url) : '';
+                const safeAudioUrl = (block.audio_url && block.audio_url.trim()) ? decodeEntities(block.audio_url) : '';
+
                 if (safeAudioUrl) {
+                    // ── Dual-stream player: video (no sound) + synced hidden audio ──
                     mediaContainer.innerHTML = `
-                        <div style="position:relative;width:100%;">
-                            <video id="mainVideo" src="${safeMediaUrl}" poster="${safeThumbUrl}" controls playsinline style="max-width:100%;display:block;"></video>
-                            <audio id="audioTrack" src="${safeAudioUrl}" preload="auto"></audio>
-                        </div>`;
+                        <div class="audio-status" id="audioStatus">🔇 AUDIO LOADING...</div>
+                        <video id="mainVideo"
+                               src="${safeMediaUrl}"
+                               poster="${safeThumbUrl}"
+                               controls playsinline
+                               style="width:100%; max-height:65vh;"></video>
+                        <audio id="audioTrack"
+                               src="${safeAudioUrl}"
+                               preload="auto"
+                               style="display:none;"></audio>`;
+
                     const video = document.getElementById('mainVideo');
                     const audio = document.getElementById('audioTrack');
-                    video.addEventListener('play', () => { audio.currentTime = video.currentTime; audio.play().catch(() => {}); });
+                    const statusEl = document.getElementById('audioStatus');
+
+                    // Mirror initial volume state as soon as audio is ready
+                    audio.addEventListener('canplay', () => {
+                        audio.volume  = video.volume;
+                        audio.muted   = video.muted;
+                        statusEl.textContent = '🔊 AUDIO READY';
+                        setTimeout(() => { statusEl.style.opacity = '0'; }, 2000);
+                    }, { once: true });
+
+                    audio.addEventListener('error', () => {
+                        statusEl.textContent = '⚠️ AUDIO UNAVAILABLE';
+                    }, { once: true });
+
+                    // ── Playback sync ──
+                    video.addEventListener('play', () => {
+                        audio.currentTime = video.currentTime;
+                        const playPromise = audio.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(err => {
+                                // Autoplay blocked — will sync on next user interaction
+                                statusEl.style.opacity = '1';
+                                statusEl.textContent   = '🔇 TAP SCREEN FOR AUDIO';
+                                // Re-attempt on the next user click anywhere
+                                const retry = () => {
+                                    audio.currentTime = video.currentTime;
+                                    audio.play().catch(() => {});
+                                    document.removeEventListener('click', retry);
+                                };
+                                document.addEventListener('click', retry);
+                            });
+                        }
+                    });
+
                     video.addEventListener('pause', () => audio.pause());
-                    video.addEventListener('seeked', () => { audio.currentTime = video.currentTime; });
-                    video.addEventListener('volumechange', () => { audio.volume = video.volume; audio.muted = video.muted; });
-                    video.addEventListener('ratechange', () => { audio.playbackRate = video.playbackRate; });
+
+                    video.addEventListener('seeked', () => {
+                        audio.currentTime = video.currentTime;
+                        if (!video.paused) audio.play().catch(() => {});
+                    });
+
+                    // Keep volume/mute in sync — covers the native <video controls> slider
+                    video.addEventListener('volumechange', () => {
+                        audio.volume = video.volume;
+                        audio.muted  = video.muted;
+                    });
+
+                    video.addEventListener('ratechange', () => {
+                        audio.playbackRate = video.playbackRate;
+                    });
+
+                    // Drift correction — keep audio within 0.3 s of video
+                    video.addEventListener('timeupdate', () => {
+                        if (!audio.paused && Math.abs(audio.currentTime - video.currentTime) > 0.3) {
+                            audio.currentTime = video.currentTime;
+                        }
+                    });
+
                 } else {
-                    mediaContainer.innerHTML = `<video src="${safeMediaUrl}" poster="${safeThumbUrl}" controls playsinline style="max-width:100%;"></video>`;
+                    // ── Single-stream: no separate audio track, play as-is ──
+                    mediaContainer.innerHTML = `
+                        <video src="${safeMediaUrl}"
+                               poster="${safeThumbUrl}"
+                               controls playsinline
+                               style="width:100%; max-height:65vh;"></video>`;
                 }
             } else {
-                mediaContainer.innerHTML = `<img src="${safeMediaUrl}">`;
+                mediaContainer.innerHTML = `<img src="${safeMediaUrl}" style="max-width:100%; max-height:65vh; object-fit:contain;">`;
             }
 
-            document.getElementById('wTitle').innerText = decodeEntities(block.title);
+            document.getElementById('wTitle').innerText  = decodeEntities(block.title);
             document.getElementById('wSource').innerText = block.source;
             document.getElementById('wAuthor').innerText = block.author;
-            document.getElementById('wDate').innerText = new Date(block.timestamp).toLocaleString();
-            document.getElementById('wDesc').innerText = decodeEntities(block.description) || "";
-            document.getElementById('wLinkBtn').href = block.source_url;
-            document.getElementById('wHash').innerText = block.hash;
+            document.getElementById('wDate').innerText   = new Date(block.timestamp).toLocaleString();
+            document.getElementById('wDesc').innerText   = decodeEntities(block.description) || '';
+            document.getElementById('wLinkBtn').href     = block.source_url;
+            document.getElementById('wHash').innerText   = block.hash;
             document.getElementById('wPrevHash').innerText = block.prev_hash;
 
             const saveBtn = document.getElementById('wSaveBtn');
