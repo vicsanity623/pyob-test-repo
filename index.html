@@ -468,15 +468,6 @@
             return textArea.value;
         }
 
-        // Reddit heavily blocks direct image hotlinking (403 Forbidden).
-        // This free proxy bypasses their CDN restrictions.
-        function proxyImage(url) {
-            if (url && url.startsWith('http') && url.includes('redd.it')) {
-                return 'https://wsrv.nl/?url=' + encodeURIComponent(url);
-            }
-            return url;
-        }
-
         function setSort(type) {
             console.log("Sorting by:", type);
             currentSort = type;
@@ -545,8 +536,7 @@
                 card.onclick = () => openWatchView(block.hash);
 
                 // Use the archived thumbnail if it exists, otherwise fallback to original
-                let thumbUrl = decodeEntities(block.thumbnail_url || block.media_url);
-                thumbUrl = proxyImage(thumbUrl);
+                const thumbUrl = decodeEntities(block.thumbnail_url || block.media_url);
                 const bgStyle = `background-image: url('${thumbUrl}')`;
                 const typeLabel = block.media_type === 'video' ? '🎥 VIDEO' : '📸 IMAGE';
 
@@ -574,10 +564,8 @@
             document.getElementById('watchContainer').style.display = 'flex';
             const mediaContainer = document.getElementById('wMedia');
 
-            let safeMediaUrl = decodeEntities(block.media_url);
-            let safeThumbUrl = block.thumbnail_url ? decodeEntities(block.thumbnail_url) : '';
-            
-            safeThumbUrl = proxyImage(safeThumbUrl);
+            const safeMediaUrl = decodeEntities(block.media_url);
+            const safeThumbUrl = block.thumbnail_url ? decodeEntities(block.thumbnail_url) : '';
 
             if (block.media_type === 'video') {
                 // Since engine.py NOW MERGES audio into the mp4, 
@@ -597,7 +585,6 @@
                     console.error("Video failed to load. It may be blocked by Reddit's CDN (403 Forbidden) or missing locally.");
                 };
             } else {
-                safeMediaUrl = proxyImage(safeMediaUrl);
                 mediaContainer.innerHTML = `<img src="${safeMediaUrl}" style="max-width:100%; max-height:65vh; object-fit:contain;">`;
             }
 
