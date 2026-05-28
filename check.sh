@@ -9,7 +9,7 @@ echo " Starting Strict Quality Checks..."
 echo "=========================================="
 
 # 1. Verify necessary Web Files exist
-echo "[1/5] Checking required web files..."
+echo "[1/4] Checking required web files..."
 # Added style.css to the required list
 REQUIRED_FILES=("index.html" "main.js" "style.css" "manifest.json" "sw.js")
 for FILE in "${REQUIRED_FILES[@]}"; do
@@ -20,7 +20,7 @@ for FILE in "${REQUIRED_FILES[@]}"; do
 done
 
 # 2. Verify Internal Links (Catches the "missing file but linked" error)
-echo "[2/5] Validating internal file references..."
+echo "[2/4] Validating internal file references..."
 # This looks for href="file.css" or src="file.js" and checks if those files exist
 links=$(grep -oE '(href|src)="([^"#]+)"' index.html | cut -d'"' -f2)
 for link in $links; do
@@ -32,7 +32,7 @@ for link in $links; do
 done
 
 # 3. HTML/CSS Syntax Check (Optional but recommended)
-echo "[3/5] Checking HTML/CSS Integrity..."
+echo "[3/4] Checking HTML/CSS Integrity..."
 if command -v htmlhint &> /dev/null; then
     htmlhint index.html
 else
@@ -47,7 +47,7 @@ else
 fi
 
 # 4. Python Strict Linting via Ruff
-echo "[4/5] Running Ruff (Strict Python Linter)..."
+echo "[4/4] Running Ruff (Strict Python Linter)..."
 if command -v ruff &> /dev/null; then
     ruff check .
     echo "✅ Ruff checks passed."
