@@ -502,7 +502,7 @@ function makeAlbumCard(album, idx) {
 
 // ── Album detail ──────────────────────────────────────────────
 /* Helper: reorder tracks in a playlist after drag-and-drop */
-function reorderPlaylistTracks(playlistId: string, fromIdx: number, toIdx: number): void {
+function reorderPlaylistTracks(playlistId, fromIdx, toIdx) {
   const pl = state.playlists.find(p => p.id === playlistId);
   if (!pl) return;
   const [moved] = pl.tracks.splice(fromIdx, 1);
@@ -535,7 +535,7 @@ function renderTrackList(listId, tracks, albumName, playlistId) {
     /* --- DRAG-AND-DROP ENABLED ONLY FOR PLAYLISTS --- */
     if (playlistId) {
       li.draggable = true;
-      li.addEventListener('dragstart', (e: DragEvent) => {
+      li.addEventListener('dragstart', (e) => {
         if (e.dataTransfer) {
           e.dataTransfer.setData('text/plain', i.toString());
           e.dataTransfer.effectAllowed = 'move';
@@ -543,13 +543,13 @@ function renderTrackList(listId, tracks, albumName, playlistId) {
         li.classList.add('dragging');
       });
       li.addEventListener('dragend', () => li.classList.remove('dragging'));
-      li.addEventListener('dragover', (e: DragEvent) => {
+      li.addEventListener('dragover', (e) => {
         e.preventDefault();
         if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
         li.classList.add('drag-over');
       });
       li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
-      li.addEventListener('drop', (e: DragEvent) => {
+      li.addEventListener('drop', (e) => {
         e.preventDefault();
         li.classList.remove('drag-over');
         const fromIdx = parseInt(e.dataTransfer?.getData('text/plain') || '', 10);

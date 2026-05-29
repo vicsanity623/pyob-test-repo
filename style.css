@@ -1165,7 +1165,7 @@ h2.section-title {
   opacity: 0.15;
   z-index: -1;
   transition: background 0.5s ease, opacity 0.5s ease;
-  border-radius: 50%;
+  border-radius: inherit;
 }
 
 #player-bar.fullscreen .player-art::after {
