@@ -612,7 +612,7 @@
             const audio: HTMLAudioElement = document.getElementById('audio-engine') as HTMLAudioElement;
 
             const playNext = (): void => {
-                if (index >= queue.length) {
+                if (index >= queue.length || !(window as any).audioEngine) {
                     audio.removeEventListener('ended', playNext);
                     return;
                 }

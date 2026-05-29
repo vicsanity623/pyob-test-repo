@@ -73,6 +73,51 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupMediaSession();
   await loadLibrary();
   renderAll();
+
+  // --- Back-to-Top button ------------------------------------------------
+  const backToTopBtn = document.createElement('button');
+  backToTopBtn.id = 'back-to-top';
+  backToTopBtn.title = 'Back to Top';
+  backToTopBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="12 5 5 12 12 19"/></svg>`;
+  backToTopBtn.style.display = 'none';
+  backToTopBtn.style.position = 'fixed';
+  backToTopBtn.style.bottom = '70px';
+  backToTopBtn.style.right = '30px';
+  backToTopBtn.style.width = '48px';
+  backToTopBtn.style.height = '48px';
+  backToTopBtn.style.background = 'var(--bg-active)';
+  backToTopBtn.style.border = 'none';
+  backToTopBtn.style.borderRadius = '50%';
+  backToTopBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,.2)';
+  backToTopBtn.style.cursor = 'pointer';
+  backToTopBtn.style.transition = 'opacity .3s, transform .3s';
+  backToTopBtn.style.zIndex = '999';
+  backToTopBtn.style.opacity = '0';
+
+  document.body.appendChild(backToTopBtn);
+
+  const toggleBackToTop = () => {
+    const visible = window.scrollY > window.innerHeight;
+    if (visible) {
+      backToTopBtn.style.display = 'block';
+      requestAnimationFrame(() => {
+        backToTopBtn.style.opacity = '1';
+        backToTopBtn.style.transform = 'translateY(0)';
+      });
+    } else {
+      backToTopBtn.style.opacity = '0';
+      backToTopBtn.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        if (window.scrollY <= window.innerHeight) backToTopBtn.style.display = 'none';
+      }, 300);
+    }
+  };
+
+  window.addEventListener('scroll', debounce(toggleBackToTop, 50));
+
+  backToTopBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 });
 
 
@@ -501,6 +546,15 @@ function makeAlbumCard(album, idx) {
 }
 
 // ── Album detail ──────────────────────────────────────────────
+/* Helper: reorder tracks in a playlist after drag-and-drop */
+function reorderPlaylistTracks(playlistId, fromIdx, toIdx) {
+  const pl = state.playlists.find(p => p.id === playlistId);
+  if (!pl) return;
+  const [moved] = pl.tracks.splice(fromIdx, 1);
+  pl.tracks.splice(toIdx, 0, moved);
+  persist();
+}
+
 function openAlbumDetail(album) {
   state.albumView = album.name;
   $('detail-title').textContent = album.name;
@@ -514,6 +568,7 @@ function openAlbumDetail(album) {
 
 function renderTrackList(listId, tracks, albumName, playlistId) {
   const ul = $(listId);
+  if (!ul) return;
   ul.innerHTML = '';
   tracks.forEach((track, i) => {
     const li = document.createElement('li');
@@ -521,6 +576,35 @@ function renderTrackList(listId, tracks, albumName, playlistId) {
     li.dataset.album = albumName || '';
     li.dataset.playlistId = playlistId || '';
     li.dataset.path = track.path;
+
+    /* --- DRAG-AND-DROP ENABLED ONLY FOR PLAYLISTS --- */
+    if (playlistId) {
+      li.draggable = true;
+      li.addEventListener('dragstart', (e) => {
+        if (e.dataTransfer) {
+          e.dataTransfer.setData('text/plain', i.toString());
+          e.dataTransfer.effectAllowed = 'move';
+        }
+        li.classList.add('dragging');
+      });
+      li.addEventListener('dragend', () => li.classList.remove('dragging'));
+      li.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        li.classList.add('drag-over');
+      });
+      li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
+      li.addEventListener('drop', (e) => {
+        e.preventDefault();
+        li.classList.remove('drag-over');
+        const fromIdx = parseInt(e.dataTransfer?.getData('text/plain') || '', 10);
+        if (!isNaN(fromIdx) && fromIdx !== i) {
+          reorderPlaylistTracks(playlistId, fromIdx, i);
+          const pl = state.playlists.find(p => p.id === playlistId);
+          if (pl) renderTrackList(listId, pl.tracks, null, playlistId);
+        }
+      });
+    }
 
     const isActive = state.currentTrack && state.currentTrack.path === track.path;
     li.className = isActive ? 'active' : '';
@@ -1568,7 +1652,10 @@ function shuffleArray(arr) {
 
 function debounce(fn, ms) {
   let t;
-  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
 }
 
 // ── Offline caching ──────────────────────────────────────────
