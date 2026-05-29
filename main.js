@@ -1125,7 +1125,7 @@ function togglePlayPause() {
 }
 
 function playNext() {
-  if (!state.queue.length) return;
+  if (!state.queue || state.queue.length === 0) return;
   if (state.shuffle) {
     state.queueIndex = Math.floor(Math.random() * state.queue.length);
   } else {
