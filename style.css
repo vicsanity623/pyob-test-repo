@@ -1002,6 +1002,24 @@ h2.section-title {
   display: none !important;
 }
 
+.back-to-top {
+  position: fixed;
+  bottom: 100px;
+  right: 40px;
+  padding: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: opacity var(--t), transform var(--t);
+  z-index: 1000;
+  opacity: 0;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+}
+
 /* Fullscreen Mode */
 #player-bar.fullscreen {
   position: fixed;

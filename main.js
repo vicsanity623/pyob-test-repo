@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderAll();
 
   // --- Back-to-Top button ------------------------------------------------
-  const backToTopBtn: HTMLButtonElement = document.createElement('button');
+  const backToTopBtn = document.createElement('button');
   backToTopBtn.id = 'back-to-top';
   backToTopBtn.title = 'Back to Top';
   backToTopBtn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="12 5 5 12 12 19"/></svg>`;
@@ -96,8 +96,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.body.appendChild(backToTopBtn);
 
-  const toggleBackToTop = (): void => {
-    const visible: boolean = window.scrollY > window.innerHeight;
+  const toggleBackToTop = () => {
+    const visible = window.scrollY > window.innerHeight;
     if (visible) {
       backToTopBtn.style.display = 'block';
       requestAnimationFrame(() => {
