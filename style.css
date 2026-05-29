@@ -1291,6 +1291,27 @@ h2.section-title {
   height: 6px;
 }
 
+.progress-tooltip {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-hi);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: var(--text-primary);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  z-index: 101;
+}
+
+.progress-track:hover .progress-tooltip {
+  opacity: 1;
+}
+
 .progress-bar {
   height: 100%;
   background: var(--text-primary);
@@ -1484,6 +1505,42 @@ h2.section-title {
 #queue-list .q-album {
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+/* Queue item hover preview */
+#queue-list li {
+  position: relative;
+}
+
+#queue-list li:hover {
+  background: var(--bg-hover);
+  transition: all 0.2s ease;
+}
+
+/* Add play indicator on hover */
+.queue-hover-indicator {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--red);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#queue-list li:hover .queue-hover-indicator {
+  opacity: 1;
+}
+
+/* Optional: Add larger play preview on click */
+#queue-list li:active .queue-hover-indicator {
+  width: 36px;
+  height: 36px;
 }
 
 /* ── Modal ─────────────────────────────────────────────────── */
@@ -2166,6 +2223,7 @@ h2.section-title {
   width: 100%;
   max-width: min(85vw, 360px);
   margin: 0 auto;
+  --scroll-dist: 0px;
   overflow: hidden;
   white-space: nowrap;
   position: relative;

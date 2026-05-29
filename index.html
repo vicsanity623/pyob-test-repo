@@ -583,6 +583,52 @@
   <audio id="audio-engine" preload="auto"></audio>
 
   <script src="main.js"></script>
+  <script>
+    function addPlayAllFromQueueButton(): void {
+        const panel: HTMLElement | null = document.getElementById('queue-panel');
+        if (!panel) return;
+
+        let btn: HTMLElement | null = panel.querySelector('#btn-play-all-from-queue');
+        if (!btn) {
+            btn = document.createElement('button');
+            btn.id = 'btn-play-all-from-queue';
+            btn.className = 'btn-play-all';
+            btn.title = 'Play All from Queue';
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 8px;">
+                    <path d="M5 3l14 9-14 9z"/>
+                </svg>
+                Play All
+            `;
+            const queueList: HTMLElement | null = panel.querySelector('#queue-list');
+            if (queueList) panel.insertBefore(btn, queueList);
+        }
+
+        btn.addEventListener('click', (): void => {
+            const queue: Array<Record<string, unknown>> = (window as any).queue || [];
+            if (queue.length === 0) return;
+
+            let index: number = 0;
+            const audio: HTMLAudioElement = document.getElementById('audio-engine') as HTMLAudioElement;
+
+            const playNext = (): void => {
+                if (index >= queue.length) {
+                    audio.removeEventListener('ended', playNext);
+                    return;
+                }
+                (window as any).audioEngine.playTrack(queue[index++]);
+            };
+
+            audio.addEventListener('ended', playNext);
+            playNext();
+        });
+    }
+
+    const queueBtn: HTMLElement | null = document.getElementById('btn-queue');
+    if (queueBtn) {
+        queueBtn.addEventListener('click', addPlayAllFromQueueButton);
+    }
+  </script>
 </body>
 
 </html>

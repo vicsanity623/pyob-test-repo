@@ -334,7 +334,11 @@ function renderAllSongs(filterText = '') {
   if (!state.library?.albums) return;
   const allTracks = [];
   state.library.albums.forEach(album => {
-    album.tracks.forEach(t => allTracks.push({ ...t, albumName: album.name }));
+    album.tracks.forEach(t => {
+      if (!state.deletedSongs.has(t.path)) {
+        allTracks.push({ ...t, albumName: album.name });
+      }
+    });
   });
   allTracks.sort((a, b) => a.title.localeCompare(b.title));
   const q = filterText.toLowerCase().trim();
@@ -546,10 +550,10 @@ function renderTrackList(listId, tracks, albumName, playlistId) {
         </div>
       </div>
     `;
-    li.addEventListener('click', () => playTrackFromContext(tracks, i, albumName || track.albumName));
+    li.addEventListener('click', () => playTrackFromContext(tracks, i, albumName ?? track.albumName));
     li.querySelector('.track-add-btn').addEventListener('click', e => {
       e.stopPropagation();
-      openAddToPlaylistModal([{ ...track, albumName: albumName || track.albumName }]);
+      openAddToPlaylistModal([{ ...track, albumName: albumName ?? track.albumName }]);
     });
     li.addEventListener('contextmenu', e => {
       e.preventDefault();
@@ -1121,7 +1125,7 @@ function togglePlayPause() {
 }
 
 function playNext() {
-  if (!state.queue.length) return;
+  if (!state.queue || state.queue.length === 0) return;
   if (state.shuffle) {
     state.queueIndex = Math.floor(Math.random() * state.queue.length);
   } else {
