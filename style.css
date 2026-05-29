@@ -2146,7 +2146,7 @@ h2.section-title {
   font-size: 0.85rem;
   opacity: 0;
   transition: opacity 0.2s ease;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .swipe-bg svg {
