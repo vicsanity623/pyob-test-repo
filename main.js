@@ -634,10 +634,10 @@ function renderTrackList(listId, tracks, albumName, playlistId) {
         </div>
       </div>
     `;
-    li.addEventListener('click', () => playTrackFromContext(tracks, i, albumName ?? track.albumName));
+    li.addEventListener('click', () => playTrackFromContext(tracks, i, albumName || track.albumName));
     li.querySelector('.track-add-btn').addEventListener('click', e => {
       e.stopPropagation();
-      openAddToPlaylistModal([{ ...track, albumName: albumName ?? track.albumName }]);
+      openAddToPlaylistModal([{ ...track, albumName: albumName || track.albumName }]);
     });
     li.addEventListener('contextmenu', e => {
       e.preventDefault();
