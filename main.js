@@ -617,7 +617,10 @@ function renderTrackList(listId, tracks, albumName, playlistId) {
         if (!isNaN(fromIdx) && fromIdx !== i) {
           reorderPlaylistTracks(playlistId, fromIdx, i);
           const pl = state.playlists.find(p => p.id === playlistId);
-          if (pl) renderTrackList(listId, pl.tracks, null, playlistId);
+          if (pl) {
+            if (state.playlistView === playlistId) state.queue = [...pl.tracks];
+            renderTrackList(listId, pl.tracks, null, playlistId);
+          }
         }
       });
     }
