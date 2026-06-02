@@ -1438,6 +1438,18 @@ h2.section-title {
   pointer-events: none;
 }
 
+/* Touch-friendly area */
+.progress-track::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  cursor: pointer;
+  z-index: 10;
+}
+
 .progress-track.clicked::after {
   width: 40px;
   height: 40px;
