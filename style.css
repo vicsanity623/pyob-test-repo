@@ -542,22 +542,57 @@ body {
 
 /* Collapse styling for the compact/2D breadboard look */
 .compact-view .comp-card {
-  width: 110px !important;
-  min-height: 42px !important;
-}
-
-.compact-view .comp-body {
-  display: none !important;
+  width: 100px !important;
+  height: 100px !important;
+  border-radius: var(--radius-lg);
 }
 
 .compact-view .comp-header {
   border-bottom: none !important;
-  border-radius: var(--radius-lg);
+  background: transparent !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 15;
 }
 
+/* Hide header text and buttons to focus on the component shape */
+.compact-view .comp-title {
+  display: none !important;
+}
+
+/* 2D Graphic Visibility Rules */
+.compact-graphic {
+  display: none;
+}
+
+.compact-view .compact-graphic {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: #111b27;
+  border-radius: var(--radius-lg);
+  padding: 6px;
+}
+
+/* Hide standard configuration inputs/labels in compact view */
+.compact-view .comp-body>*:not(.compact-graphic) {
+  display: none !important;
+}
+
+/* Responsive scale formula for terminals (100px / 192px width ratio) */
 .compact-view .term-node {
-  transform: scale(0.85);
-  background: var(--bg-dark);
+  transform: scale(0.82);
+  background: var(--bg-deepest);
+  border-color: var(--border-hi);
+  left: calc((var(--rel-x) * 0.52) - 11px) !important;
+  top: calc((var(--rel-y) * 0.75) - 11px) !important;
 }
 
 .comp-card:hover {
