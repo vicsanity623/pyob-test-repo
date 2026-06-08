@@ -1209,6 +1209,38 @@ select:focus {
   }
 }
 
+/* === COMPONENT GLOSSARY === */
+.glossary-item {
+  background: var(--bg-deepest);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  margin-bottom: 8px;
+  transition: border-color 0.15s;
+}
+
+.glossary-item:hover {
+  border-color: var(--border-hi);
+}
+
+.glossary-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+}
+
+.glossary-text {
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.glossary-text strong {
+  color: var(--text-primary);
+}
+
 /* === TUTORIAL GUIDE PANEL === */
 .tutorial-selector {
   padding: 10px;
