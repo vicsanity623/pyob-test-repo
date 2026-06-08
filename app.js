@@ -2430,6 +2430,18 @@ function evaluateActiveTutorial(nodeMap) {
 // ─── SIMULATION SOLVER ────────────────────────────────────────────────────────
 function simulationTick() {
   if (!simulationRunning) return;
+
+  // Defensive Check: Instantly purge any "ghost wires" pointing to non-existent terminals
+  const validTerminalIds = new Set();
+  components.forEach(c => c.terminals.forEach(t => validTerminalIds.add(t.id)));
+  const initialWireCount = wires.length;
+  wires = wires.filter(w => validTerminalIds.has(w.from) && validTerminalIds.has(w.to));
+
+  // If any ghost wires were purged, refresh the visual wire layer immediately
+  if (wires.length !== initialWireCount) {
+    updateWires();
+  }
+
   simulationTime += 0.1;
 
   // Build union-find graph
