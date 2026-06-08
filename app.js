@@ -1187,7 +1187,14 @@ function handlePointerMove(e) {
 function handlePointerUp(e) {
   if (!activeWireStart) return;
   const coords = getPointerCoords(e);
-  const el = document.elementFromPoint(coords.clientX, coords.clientY);
+  let el = document.elementFromPoint(coords.clientX, coords.clientY);
+
+  // DOM Traversal Guard: Resolve parent terminal node if pointer landed on the inner text <span>
+  if (el) {
+    const termNode = el.closest('.term-node');
+    if (termNode) el = termNode;
+  }
+
   let successfullyReconnected = false;
 
   if (el && el.dataset && el.dataset.termId && el.dataset.termId !== activeWireStart) {
