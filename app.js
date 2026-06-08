@@ -994,6 +994,20 @@ function handleDrag(e) {
 }
 
 function endDrag() {
+  if (draggedComponent) {
+    const gridSize = 24;
+    const snappedX = Math.round(draggedComponent.x / gridSize) * gridSize;
+    const snappedY = Math.round(draggedComponent.y / gridSize) * gridSize;
+    draggedComponent.x = snappedX;
+    draggedComponent.y = snappedY;
+    const el = document.getElementById(draggedComponent.id);
+    if (el) {
+      el.style.left = snappedX + 'px';
+      el.style.top = snappedY + 'px';
+    }
+    updateWires();
+  }
+
   draggedComponent = null;
   isDragging = false;
   document.removeEventListener('mousemove', handleDrag);
