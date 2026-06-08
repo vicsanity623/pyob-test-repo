@@ -643,12 +643,107 @@ body {
   transform: translateX(-50%) scale(0.85) !important;
 }
 
-/* 2. USB & Bench Power Supplies (Align positive to left, negative to right) */
+/* 2. USB, Bench, & Solar Power (Align positive to left, negative to right) */
 .compact-view .comp-card[data-type="usb_power"] .term-node[data-label="5V"],
+.compact-view .comp-card[data-type="solar_panel"] .term-node[data-label="+"],
 .compact-view .comp-card[data-type="bench_psu"] .term-node[data-label="+"] {
   left: 6px !important;
   top: 50% !important;
   transform: translateY(-50%) scale(0.85) !important;
+}
+
+.compact-view .comp-card[data-type="usb_power"] .term-node[data-label="GND"],
+.compact-view .comp-card[data-type="solar_panel"] .term-node[data-label="-"],
+.compact-view .comp-card[data-type="bench_psu"] .term-node[data-label="GND"] {
+  left: auto !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
+/* 3. Passives & Active Loops (Resistors, Potentiometers, Inductors, Salt Water) */
+.compact-view .comp-card[data-type^="resistor"] .term-node[data-label="A"],
+.compact-view .comp-card[data-type^="wire_"] .term-node[data-label="A"],
+.compact-view .comp-card[data-type="salt_water"] .term-node[data-label="A"],
+.compact-view .comp-card[data-type="pot"] .term-node[data-label="A"],
+.compact-view .comp-card[data-type="inductor"] .term-node[data-label="A"],
+.compact-view .comp-card[data-type="ind_1mH"] .term-node[data-label="A"] {
+  left: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
+.compact-view .comp-card[data-type^="resistor"] .term-node[data-label="B"],
+.compact-view .comp-card[data-type^="wire_"] .term-node[data-label="B"],
+.compact-view .comp-card[data-type="salt_water"] .term-node[data-label="B"],
+.compact-view .comp-card[data-type="pot"] .term-node[data-label="B"],
+.compact-view .comp-card[data-type="inductor"] .term-node[data-label="B"],
+.compact-view .comp-card[data-type="ind_1mH"] .term-node[data-label="B"] {
+  left: auto !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
+/* 4. Diodes, Zeners, & LEDs (Align positive anode to left, negative cathode to right) */
+.compact-view .comp-card[data-type^="diode"] .term-node[data-label="A+"],
+.compact-view .comp-card[data-type="zener"] .term-node[data-label="A+"],
+.compact-view .comp-card[data-type^="led"] .term-node[data-label="A+"] {
+  left: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
+.compact-view .comp-card[data-type^="diode"] .term-node[data-label="K-"],
+.compact-view .comp-card[data-type="zener"] .term-node[data-label="K-"],
+.compact-view .comp-card[data-type^="led"] .term-node[data-label="K-"] {
+  left: auto !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
+/* 5. Capacitors (+ Left, - Right) */
+.compact-view .comp-card[data-type^="cap"] .term-node[data-label="+"] {
+  left: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
+.compact-view .comp-card[data-type^="cap"] .term-node[data-label="-"] {
+  left: auto !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
+/* 6. Transformers (Primary Coil Left, Secondary Coil Right) */
+.compact-view .comp-card[data-type="transformer"] .term-node[data-label="P+"] {
+  left: 6px !important;
+  top: 16px !important;
+  transform: scale(0.8) !important;
+}
+
+.compact-view .comp-card[data-type="transformer"] .term-node[data-label="P-"] {
+  left: 6px !important;
+  top: auto !important;
+  bottom: 16px !important;
+  transform: scale(0.8) !important;
+}
+
+.compact-view .comp-card[data-type="transformer"] .term-node[data-label="S+"] {
+  left: auto !important;
+  right: 6px !important;
+  top: 16px !important;
+  transform: scale(0.8) !important;
+}
+
+.compact-view .comp-card[data-type="transformer"] .term-node[data-label="S-"] {
+  left: auto !important;
+  right: 6px !important;
+  top: auto !important;
+  bottom: 16px !important;
+  transform: scale(0.8) !important;
 }
 
 .compact-view .comp-card[data-type="usb_power"] .term-node[data-label="GND"],
