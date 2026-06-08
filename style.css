@@ -556,7 +556,16 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 15;
+  height: 100%; /* Stretch header to fill the card so it is draggable from anywhere */
+  z-index: 10;  /* Below terminals (z-index 20) but above graphics (z-index 5) */
+}
+
+/* Counter-rotate text layers to keep labels upright */
+.term-node span, 
+.compact-graphic text {
+  display: inline-block;
+  transform: rotate(calc(-1 * var(--rotation, 0deg))) !important;
+  transform-origin: center;
 }
 
 /* Hide standard layout properties in compact mode */
