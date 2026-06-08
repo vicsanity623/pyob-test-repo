@@ -1209,38 +1209,6 @@ select:focus {
   }
 }
 
-/* === COMPONENT GLOSSARY === */
-.glossary-item {
-  background: var(--bg-deepest);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 10px;
-  margin-bottom: 8px;
-  transition: border-color 0.15s;
-}
-
-.glossary-item:hover {
-  border-color: var(--border-hi);
-}
-
-.glossary-name {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--teal);
-  margin-bottom: 4px;
-  font-family: var(--font-mono);
-}
-
-.glossary-text {
-  font-size: 10px;
-  color: var(--text-secondary);
-  line-height: 1.45;
-}
-
-.glossary-text strong {
-  color: var(--text-primary);
-}
-
 /* === TUTORIAL GUIDE PANEL === */
 .tutorial-selector {
   padding: 10px;
@@ -1465,48 +1433,6 @@ select:focus {
   /* Gold solder color */
   border: 2px solid #b45309 !important;
   box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
-}
-
-/* === EARTH GROUND MODULE === */
-.comp-card[data-type="earth_gnd"] {
-  width: 32px !important;
-  height: 32px !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  cursor: grab;
-}
-
-.comp-card[data-type="earth_gnd"] .comp-header {
-  display: none !important;
-}
-
-.comp-card[data-type="earth_gnd"] .comp-body {
-  padding: 0 !important;
-  min-height: auto !important;
-}
-
-.comp-card[data-type="earth_gnd"] .compact-graphic {
-  display: flex !important;
-  background: transparent !important;
-  border: none !important;
-  pointer-events: none;
-}
-
-.comp-card[data-type="earth_gnd"] .term-node {
-  left: 5px !important;
-  top: 5px !important;
-  width: 22px !important;
-  height: 22px !important;
-  background: var(--bg-deepest) !important;
-  border: 2px solid var(--sky) !important;
-  color: var(--sky) !important;
-  font-weight: bold;
-  font-size: 6px;
-}
-
-.comp-card[data-type="earth_gnd"] .term-node span {
-  display: none !important;
 }
 
 .comp-card[data-type="solder_joint"] .term-node span {
