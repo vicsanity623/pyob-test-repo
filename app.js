@@ -1028,8 +1028,37 @@ function startWire(e, termId) {
   if (isDragging) return;
   e.stopPropagation();
   e.preventDefault();
-  // Cancel any active wire if clicking same terminal
-  if (activeWireStart === termId) { activeWireStart = null; updateWires(); return; }
+
+  // Cancel any active wire if clicking same terminal twice
+  if (activeWireStart === termId) {
+    activeWireStart = null;
+    updateWires();
+    return;
+  }
+
+  // UE5-Style Detach: Check if this terminal already has a wire connected to it
+  const connectedWireIdx = wires.findIndex(w => w.from === termId || w.to === termId);
+
+  if (connectedWireIdx !== -1) {
+    const wire = wires[connectedWireIdx];
+
+    // Find the other terminal (the anchor end that stays attached)
+    const anchorTermId = (wire.from === termId) ? wire.to : wire.from;
+
+    // Lift/remove the wire from the board to initiate dragging the free end
+    wires.splice(connectedWireIdx, 1);
+
+    activeWireStart = anchorTermId;
+    const coords = getPointerCoords(e);
+    mousePosition.x = coords.x;
+    mousePosition.y = coords.y;
+
+    showToast('Wire detached. Drag to reconnect, or release in empty space to delete.', 'info');
+    updateWires();
+    return;
+  }
+
+  // Fallback: If terminal is empty, start a brand-new connection path
   activeWireStart = termId;
   const coords = getPointerCoords(e);
   mousePosition.x = coords.x;
@@ -1052,14 +1081,23 @@ function handlePointerUp(e) {
   if (!activeWireStart) return;
   const coords = getPointerCoords(e);
   const el = document.elementFromPoint(coords.clientX, coords.clientY);
+  let successfullyReconnected = false;
+
   if (el && el.dataset && el.dataset.termId && el.dataset.termId !== activeWireStart) {
     const termId = el.dataset.termId;
     const wireExists = wires.some(w => (w.from === activeWireStart && w.to === termId) || (w.from === termId && w.to === activeWireStart));
     if (!wireExists) {
       wires.push({ from: activeWireStart, to: termId, color: selectedWireColor });
       showToast('Wire connected ✓', 'success');
+      successfullyReconnected = true;
     }
   }
+
+  // If you let go over empty space, the wire is deleted
+  if (!successfullyReconnected) {
+    showToast('Wire deleted', 'warn');
+  }
+
   activeWireStart = null;
   updateWires();
 }
@@ -2548,6 +2586,12 @@ function applyWorkspaceTransform() {
 }
 
 function handleWorkspaceWheel(e) {
+  // Disable zooming if a component is actively being dragged
+  if (draggedComponent || isDragging) {
+    e.preventDefault();
+    return;
+  }
+
   e.preventDefault();
   const zoomFactor = 1.08;
   const rect = workspace.getBoundingClientRect();
