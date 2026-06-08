@@ -110,7 +110,6 @@ const PARTS_CATALOGUE = [
       { type: 'transformer', icon: '⊘', iconClass: 'icon-passive', name: 'Transformer 1:10', desc: 'Step-up audio, 600Ω:60kΩ' },
       { type: 'custom_load', icon: '🔌', iconClass: 'icon-passive', name: 'Custom Load', desc: 'Configurable voltage/power appliance' },
       { type: 'solder_joint', icon: '⚫', iconClass: 'icon-passive', name: 'Solder Joint', desc: 'Wiring junction point' },
-      { type: 'earth_gnd', icon: '⏚', iconClass: 'icon-passive', name: 'Earth Ground', desc: 'Reference 0V potential node' },
     ]
   },
   // ── SEMICONDUCTORS ─────────────────────────────────────────────────────────
@@ -193,10 +192,6 @@ function makeTerminals(id, defs) {
 function buildComponent(type, id, existingComponents) {
   let terminals = [], state = {};
   switch (type) {
-    case 'earth_gnd':
-      terminals = makeTerminals(id, [{ label: 'GND', x: 16, y: 16 }]);
-      state = { name: 'Earth Ground' };
-      break;
     case 'custom_load':
       terminals = makeTerminals(id, [{ label: '+', x: 16, y: 50 }, { label: '-', x: 176, y: 50 }]);
       state = { vNom: 12.0, pNom: 10.0, blown: false, name: 'Custom Load' };
@@ -811,7 +806,7 @@ function renderComponent(comp) {
   container.appendChild(div);
 
   // Custom drag binding for Headerless components (like Solder Joint)
-  if (comp.type === 'solder_joint' || comp.type === 'earth_gnd') {
+  if (comp.type === 'solder_joint') {
     div.addEventListener('mousedown', e => {
       if (e.button === 0) startDrag(e, comp.id);
     });
@@ -1192,14 +1187,7 @@ function handlePointerMove(e) {
 function handlePointerUp(e) {
   if (!activeWireStart) return;
   const coords = getPointerCoords(e);
-  let el = document.elementFromPoint(coords.clientX, coords.clientY);
-
-  // DOM Traversal Guard: Resolve parent terminal node if pointer landed on the inner text <span>
-  if (el) {
-    const termNode = el.closest('.term-node');
-    if (termNode) el = termNode;
-  }
-
+  const el = document.elementFromPoint(coords.clientX, coords.clientY);
   let successfullyReconnected = false;
 
   if (el && el.dataset && el.dataset.termId && el.dataset.termId !== activeWireStart) {
@@ -1849,18 +1837,6 @@ function getCompactGraphicHTML(comp) {
     `;
   }
 
-  // 13.8 Earth Ground Reference Symbols
-  if (type === 'earth_gnd') {
-    return `
-      <svg viewBox="0 0 40 40" width="32" height="32" style="position: absolute; top: -14px; left: 0;">
-        <line x1="20" y1="5" x2="20" y2="24" stroke="var(--sky)" stroke-width="2.5" />
-        <line x1="10" y1="24" x2="30" y2="24" stroke="var(--sky)" stroke-width="2.5" />
-        <line x1="14" y1="29" x2="26" y2="29" stroke="var(--sky)" stroke-width="2.5" />
-        <line x1="18" y1="34" x2="22" y2="34" stroke="var(--sky)" stroke-width="2.5" />
-      </svg>
-    `;
-  }
-
   // 14. Raw Materials (Salt Water Cells, Copper Wire coils)
   if (type === 'salt_water' || type === 'wire_copper' || type === 'wire_nichrome') {
     if (type === 'salt_water') {
@@ -2220,80 +2196,6 @@ function getCustomCircuitMetrics() {
   return html || '<div class="metric-row" style="color:var(--text-secondary)">Build a closed loop to monitor paths.</div>';
 }
 
-// ─── COMPONENT GLOSSARY DATABASE ──────────────────────────────────────────────
-const GLOSSARY_DB = [
-  {
-    name: "🔋 18650 Li-ion / AAA Battery",
-    desc: "Stores energy chemically. <strong>EMF (Electromotive Force)</strong> is the resting open-circuit voltage, while <strong>Internal Resistance</strong> acts as a small parasite resistor that drops voltage when current is drawn under load."
-  },
-  {
-    name: "🔌 Solder Joint / Junction",
-    desc: "A zero-impedance node used to split or merge electrical connections. Wires connected to the same solder joint are brought to equal voltage levels, acting like a breadboard power bus."
-  },
-  {
-    name: "🔌 Custom Load (Appliance)",
-    desc: "A configurable power appliance. Calculates equivalent resistance dynamically using the formula <strong>R = V² / P</strong>. Blows/fuses if applied voltage exceeds nominal requirements by 20%."
-  },
-  {
-    name: "Ω Resistors & Potentiometers",
-    desc: "Limits current flow using Ohm's Law: <strong>V = I × R</strong>. Converts excess electrical energy into heat. Potentiometers use a sliding wiper to divide resistance proportionally across 3 terminals."
-  },
-  {
-    name: "◫ Capacitors (CAP)",
-    desc: "Stores electrostatic energy inside an electric field. Blocks DC currents once charged but acts as a low-impedance path to transient/high-frequency AC waveforms."
-  },
-  {
-    name: "▶ Diodes & LEDs",
-    desc: "Semiconductor PN junctions. Allows current to flow in only one direction (Anode to Cathode). LEDs emit photons when current flows, and will blow if currents exceed maximum ratings."
-  },
-  {
-    name: "📉 Transistors (BJTs & MOSFETs)",
-    desc: "Three-terminal active switches. Small input currents (Base on BJTs) or gate voltages (Gate on MOSFETs) control larger output paths, enabling digital switches and analog amplifiers."
-  },
-  {
-    name: "📟 Multimeters & Oscilloscopes",
-    desc: "Measurement instruments. Multimeters measure Voltages (in parallel) and Currents (in series using shunts). Oscilloscopes track and plot rapid voltage variations over time."
-  }
-];
-
-function switchRightSidebarTab(mode) {
-  const tracker = document.getElementById('step-tracker');
-  const glossary = document.getElementById('glossary-tracker');
-  const btnGuide = document.getElementById('subtab-guide');
-  const btnGlossary = document.getElementById('subtab-glossary');
-
-  if (!tracker || !glossary) return;
-
-  if (mode === 'glossary') {
-    tracker.classList.add('hidden');
-    glossary.classList.remove('hidden');
-    btnGuide.classList.remove('btn-teal');
-    btnGuide.classList.add('btn-secondary');
-    btnGlossary.classList.add('btn-teal');
-    btnGlossary.classList.remove('btn-secondary');
-    renderGlossary();
-  } else {
-    tracker.classList.remove('hidden');
-    glossary.classList.add('hidden');
-    btnGuide.classList.add('btn-teal');
-    btnGuide.classList.remove('btn-secondary');
-    btnGlossary.classList.remove('btn-teal');
-    btnGlossary.classList.add('btn-secondary');
-  }
-}
-
-function renderGlossary() {
-  const container = document.getElementById('glossary-tracker');
-  if (!container) return;
-
-  container.innerHTML = GLOSSARY_DB.map(item => `
-    <div class="glossary-item">
-      <div class="glossary-name">${item.name}</div>
-      <div class="glossary-text">${item.desc}</div>
-    </div>
-  `).join('');
-}
-
 function switchTutorial(key) {
   currentTutorial = key;
   const config = tutorialGuides[key];
@@ -2454,18 +2356,6 @@ function evaluateActiveTutorial(nodeMap) {
 // ─── SIMULATION SOLVER ────────────────────────────────────────────────────────
 function simulationTick() {
   if (!simulationRunning) return;
-
-  // Defensive Check: Instantly purge any "ghost wires" pointing to non-existent terminals
-  const validTerminalIds = new Set();
-  components.forEach(c => c.terminals.forEach(t => validTerminalIds.add(t.id)));
-  const initialWireCount = wires.length;
-  wires = wires.filter(w => validTerminalIds.has(w.from) && validTerminalIds.has(w.to));
-
-  // If any ghost wires were purged, refresh the visual wire layer immediately
-  if (wires.length !== initialWireCount) {
-    updateWires();
-  }
-
   simulationTime += 0.1;
 
   // Build union-find graph
@@ -2494,55 +2384,27 @@ function simulationTick() {
 
   if (!nodeCount) return;
 
-  // Dynamic Multi-Island Ground Detection
-  const islandGnds = {};
-  const gndTypes = ['earth_gnd', 'usb_power', 'bench_psu', 'solar_panel', 'signal_generator', 'battery_9v', 'battery_aa', 'battery_cr2032', 'battery_lipo', 'battery_lead', 'battery_18650', 'battery_aaa', 'battery_d', 'lemon_battery'];
-
-  // 1. Scan all active components to find and assign local grounds for each isolated circuit island
-  components.forEach(c => {
-    const gndTerm = c.terminals.find(t => t.label === 'GND' || t.label === '-');
-    if (gndTerm && gndTypes.includes(c.type)) {
-      const root = find(gndTerm.id);
-      const rootIdx = nodeMap[root];
-      const gndNodeIdx = nodeMap[gndTerm.id];
-
-      // Explicit earth grounds override default battery grounds
-      if (c.type === 'earth_gnd') {
-        islandGnds[rootIdx] = gndNodeIdx;
-      } else if (islandGnds[rootIdx] === undefined) {
-        islandGnds[rootIdx] = gndNodeIdx;
-      }
+  // Find ground node
+  let gndIdx = -1;
+  const gndTypes = ['usb_power', 'bench_psu', 'solar_panel', 'signal_generator', 'battery_9v', 'battery_aa', 'battery_cr2032', 'battery_lipo', 'battery_lead', 'battery_18650', 'battery_aaa', 'battery_d', 'lemon_battery'];
+  for (let t of gndTypes) {
+    const c = components.find(c => c.type === t);
+    if (c) {
+      const gnd = c.terminals.find(t => t.label === 'GND' || t.label === '-');
+      if (gnd) { gndIdx = nodeMap[gnd.id]; break; }
     }
-  });
-
-  // 2. Fallback: Ensure every connected island has a locked reference node to prevent singular matrices
-  const uniqueRoots = new Set();
-  allTerminals.forEach(tid => {
-    uniqueRoots.add(nodeMap[find(tid)]);
-  });
-
-  // Assign a reference ground index only to the actual roots of independent islands
-  uniqueRoots.forEach(rootIdx => {
-    if (islandGnds[rootIdx] === undefined) {
-      islandGnds[rootIdx] = rootIdx; // Lock the root node of this isolated island to 0V as a baseline
-    }
-  });
-
-  const lockedGndNodes = new Set(Object.values(islandGnds));
+  }
+  if (gndIdx === -1) gndIdx = 0;
 
   const V = new Array(nodeCount).fill(0.0);
-  if (lastVoltages && lastVoltages.length === nodeCount) {
-    V.forEach((_, i) => { V[i] = lastVoltages[i]; });
-  }
+  if (lastVoltages && lastVoltages.length === nodeCount) V.forEach((_, i) => { V[i] = lastVoltages[i]; });
+  V[gndIdx] = 0.0;
 
-  // Lock all designated island ground reference nodes to exactly 0.0V
-  lockedGndNodes.forEach(idx => { V[idx] = 0.0; });
-
-  // Iterative nodal analysis (Gauss-Seidel) with locked multi-ground reference sets
+  // Iterative nodal analysis (Gauss-Seidel)
   for (let iter = 0; iter < 200; iter++) {
     const nV = [...V];
     for (let i = 0; i < nodeCount; i++) {
-      if (lockedGndNodes.has(i)) continue; // Skip and lock local ground nodes at 0V
+      if (i === gndIdx) continue;
       let sumG = 0, sumGV = 0;
 
       components.forEach(comp => {
@@ -2790,13 +2652,13 @@ function simulationTick() {
 
       if (sumG > 0) nV[i] = sumGV / sumG; else nV[i] = 0;
     }
-    // Update non-ground nodes with the newly relaxed iterations
-    V.forEach((_, i) => { if (!lockedGndNodes.has(i)) V[i] = nV[i]; });
+    V.forEach((_, i) => { if (i !== gndIdx) V[i] = nV[i]; });
   }
 
-  // Force reference ground potentials to exactly 0V
-  lockedGndNodes.forEach(idx => { V[idx] = 0.0; });
+  V[gndIdx] = 0.0;
   lastVoltages = V;
+
+  // Update terminal voltages
   components.forEach(c => { c.terminals.forEach(t => { t.voltage = V[nodeMap[t.id]] || 0; }); });
 
   // Post-process updates
@@ -3467,28 +3329,6 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('parts-search')?.addEventListener('input', e => filterParts(e.target.value));
 
   document.getElementById('btn-wires')?.addEventListener('click', openWireManager);
-
-  // Mount Sub-Tabs and Glossary container inside the Right Sidebar Header
-  const guideHeader = document.querySelector('#panel-guide .sidebar-header');
-  if (guideHeader) {
-    const tabContainer = document.createElement('div');
-    tabContainer.className = 'sub-tab-bar';
-    tabContainer.style = 'display:flex; gap:4px; margin-top:8px;';
-    tabContainer.innerHTML = `
-      <button id="subtab-guide" class="btn btn-teal w-full" style="padding:4px 8px; font-size:10px; justify-content:center;" onclick="switchRightSidebarTab('guide')">📖 Guide</button>
-      <button id="subtab-glossary" class="btn btn-secondary w-full" style="padding:4px 8px; font-size:10px; justify-content:center;" onclick="switchRightSidebarTab('glossary')">🧠 Glossary</button>
-    `;
-    guideHeader.appendChild(tabContainer);
-  }
-
-  const guideBody = document.querySelector('#panel-guide .sidebar-body');
-  if (guideBody) {
-    const glossTracker = document.createElement('div');
-    glossTracker.id = 'glossary-tracker';
-    glossTracker.className = 'hidden';
-    glossTracker.style = 'display:flex; flex-direction:column; gap:8px; max-height: 400px; overflow-y: auto;';
-    guideBody.insertBefore(glossTracker, guideBody.firstChild);
-  }
 
   // Programmatically mount the Telemetry HUD element inside the workspace viewport
   const hud = document.createElement('div');
