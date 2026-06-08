@@ -703,6 +703,20 @@ body {
   transform: translateY(-50%) scale(0.85) !important;
 }
 
+/* 4.5 Custom Loads (+ Left, - Right) */
+.compact-view .comp-card[data-type="custom_load"] .term-node[data-label="+"] {
+  left: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
+.compact-view .comp-card[data-type="custom_load"] .term-node[data-label="-"] {
+  left: auto !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+}
+
 /* 5. Capacitors (+ Left, - Right) */
 .compact-view .comp-card[data-type^="cap"] .term-node[data-label="+"] {
   left: 6px !important;
