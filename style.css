@@ -1381,6 +1381,32 @@ select:focus {
   border-radius: 4px;
 }
 
+/* === WORKSPACE METRICS HUD === */
+.workspace-metrics-hud {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 210px;
+  background: rgba(10, 18, 32, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  padding: 12px;
+  z-index: 40;
+  font-family: var(--font-ui);
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+  /* Let clicks pass through the HUD backdrop */
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Visual selection indicator for component cards */
+.comp-card.selected {
+  border-color: var(--teal) !important;
+  box-shadow: var(--shadow-card), 0 0 12px var(--teal-glow) !important;
+}
+
 /* === FLOATING WIRE TOOLTIP === */
 .wire-tooltip {
   position: fixed;
