@@ -13,6 +13,7 @@ let transformState = { scale: 1.0, x: 0, y: 0 };
 let isPanningWorkspace = false;
 let panStart = { x: 0, y: 0 };
 let lastTouchDistance = 0;
+let compactMode = false;
 let activeWireStart = null;
 let mousePosition = { x: 0, y: 0 };
 let draggedComponent = null;
@@ -684,7 +685,7 @@ function addComponent(type, customX, customY) {
   const x = customX !== null && customX !== undefined ? customX : Math.max(10, (rect.width / 2) - 96);
   const y = customY !== null && customY !== undefined ? customY : Math.max(10, (rect.height / 2) - 80);
   const { terminals, state } = buildComponent(type, id, components);
-  const comp = { id, type, x, y, terminals, state };
+  const comp = { id, type, x, y, terminals, state, rotation: 0 };
   components.push(comp);
   renderComponent(comp);
   updateResistorBandsForComp(comp);
@@ -724,11 +725,14 @@ function renderComponent(comp) {
     mosfet_n: 'border-bottom-color:#0d1a3d', mosfet_p: 'border-bottom-color:#0d1a3d',
   };
 
+  div.style.setProperty('--rotation', `${comp.rotation || 0}deg`);
+
   div.innerHTML = `
        <div class="comp-header" style="${headerColors[comp.type] || ''}"
             onmousedown="startDrag(event,'${comp.id}')"
             ontouchstart="startDrag(event,'${comp.id}')">
          <span class="comp-title">${getComponentTitle(comp)}</span>
+         <button class="comp-rotate-btn" title="Rotate 90°" onclick="rotateComponent('${comp.id}')">↻</button>
          <button class="comp-remove-btn" onclick="removeComponent('${comp.id}')">✕</button>
        </div>
        <div class="comp-body">${buildCardBody(comp)}</div>
@@ -1032,22 +1036,36 @@ function handlePointerUp(e) {
   updateWires();
 }
 
+// Dynamic scale-immune coordinate lookup
+function getTerminalWorkspaceCoords(termId) {
+  const el = document.getElementById(termId);
+  if (!el) return { x: 0, y: 0 };
+  const rect = workspace.getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  const rx = (r.left + r.width / 2) - rect.left;
+  const ry = (r.top + r.height / 2) - rect.top;
+  return {
+    x: (rx - transformState.x) / transformState.scale,
+    y: (ry - transformState.y) / transformState.scale
+  };
+}
+
 function updateWires() {
   wireLayer.innerHTML = '';
   const rect = workspace.getBoundingClientRect();
 
   wires.forEach((wire, index) => {
     const termFrom = getTerminalObj(wire.from);
-    const compFrom = components.find(c => c.terminals.some(t => t.id === wire.from));
     const termTo = getTerminalObj(wire.to);
-    const compTo = components.find(c => c.terminals.some(t => t.id === wire.to));
+    if (!termFrom || !termTo) return;
 
-    if (!compFrom || !compTo || !termFrom || !termTo) return;
+    const coordsFrom = getTerminalWorkspaceCoords(wire.from);
+    const coordsTo = getTerminalWorkspaceCoords(wire.to);
 
-    const x1 = compFrom.x + termFrom.relX;
-    const y1 = compFrom.y + termFrom.relY;
-    const x2 = compTo.x + termTo.relX;
-    const y2 = compTo.y + termTo.relY;
+    const x1 = coordsFrom.x;
+    const y1 = coordsFrom.y;
+    const x2 = coordsTo.x;
+    const y2 = coordsTo.y;
 
     const termData = getTerminalObj(wire.from);
     let strokeColor = wire.color || '#64748b';
@@ -1116,11 +1134,10 @@ function updateWires() {
 
   // Draw active wire preview
   if (activeWireStart) {
-    const termFrom = getTerminalObj(activeWireStart);
-    const compFrom = components.find(c => c.terminals.some(t => t.id === activeWireStart));
-    if (compFrom && termFrom) {
-      const x1 = compFrom.x + termFrom.relX;
-      const y1 = compFrom.y + termFrom.relY;
+    const coordsFrom = getTerminalWorkspaceCoords(activeWireStart);
+    if (coordsFrom) {
+      const x1 = coordsFrom.x;
+      const y1 = coordsFrom.y;
       const x2 = mousePosition.x, y2 = mousePosition.y;
       const ctrl = Math.min(Math.abs(x2 - x1) * 0.5, 80);
       const preview = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -1259,7 +1276,7 @@ function showToast(msg, type = 'info') {
 function switchMobileTab(tab) {
   currentMobileTab = tab;
   ['workspace', 'parts', 'guide'].forEach(t => {
-    const tab_btn = document.getElementById('tab-' + t);
+    const tab_btn = document.getElementById('mtab-' + t);
     const panel = t === 'workspace' ? document.getElementById('workspace') :
       t === 'parts' ? document.getElementById('panel-parts') :
         document.getElementById('panel-guide');
@@ -1270,10 +1287,43 @@ function switchMobileTab(tab) {
   const activePanel = tab === 'workspace' ? document.getElementById('workspace') :
     tab === 'parts' ? document.getElementById('panel-parts') :
       document.getElementById('panel-guide');
-  const activeBtn = document.getElementById('tab-' + tab);
+  const activeBtn = document.getElementById('mtab-' + tab);
   if (activePanel) activePanel.classList.add('mobile-visible');
   if (activeBtn) activeBtn.classList.add('active');
   if (tab === 'workspace') setTimeout(updateWires, 50);
+}
+
+// ─── ROTATION & COLLAPSE CONTROLS ─────────────────────────────────────────────
+function rotateComponent(id) {
+  const comp = components.find(c => c.id === id);
+  if (!comp) return;
+  comp.rotation = ((comp.rotation || 0) + 90) % 360;
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.setProperty('--rotation', `${comp.rotation}deg`);
+  }
+  updateWires();
+}
+
+function toggleCompactMode() {
+  compactMode = !compactMode;
+  const layer = document.getElementById('components-container');
+  if (layer) layer.classList.toggle('compact-view', compactMode);
+
+  const btn = document.getElementById('btn-compact-toggle');
+  if (btn) {
+    btn.classList.toggle('btn-teal', compactMode);
+    btn.classList.toggle('btn-secondary', !compactMode);
+  }
+  setTimeout(updateWires, 150); // Give transitions time to complete
+}
+
+function toggleSidebar(panelId) {
+  const panel = document.getElementById(panelId);
+  if (panel) {
+    panel.classList.toggle('collapsed');
+    setTimeout(updateWires, 210);
+  }
 }
 
 // ─── TUTORIAL GUIDE ───────────────────────────────────────────────────────────
@@ -2359,6 +2409,17 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('parts-search')?.addEventListener('input', e => filterParts(e.target.value));
 
   document.getElementById('btn-wires')?.addEventListener('click', openWireManager);
+
+  // Inject clean floating workspace action buttons
+  const workspaceControls = document.createElement('div');
+  workspaceControls.style = 'position: absolute; bottom: 16px; left: 16px; z-index: 40; display: flex; gap: 8px;';
+  workspaceControls.innerHTML = `
+    <button id="btn-compact-toggle" class="btn btn-secondary" onclick="toggleCompactMode()">🏷️ Compact View</button>
+    <button class="btn btn-secondary" onclick="toggleSidebar('panel-parts')">📁 Toggle Library</button>
+    <button class="btn btn-secondary" onclick="toggleSidebar('panel-guide')">📖 Toggle Guide</button>
+  `;
+  workspace.appendChild(workspaceControls);
+
   initKeyboardShortcuts();
   switchMobileTab('workspace');
   switchTutorial('lead_acid');
