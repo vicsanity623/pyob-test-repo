@@ -271,11 +271,27 @@ body {
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
+  transition: width 0.2s ease, opacity 0.2s ease;
+}
+
+/* Collapsed utility class */
+.sidebar.collapsed {
+  width: 0px !important;
+  border: none !important;
+  opacity: 0 !important;
+  pointer-events: none;
 }
 
 .sidebar-right {
   border-right: none;
   border-left: 1px solid var(--border);
+}
+
+.sidebar-right.collapsed {
+  width: 0px !important;
+  border: none !important;
+  opacity: 0 !important;
+  pointer-events: none;
 }
 
 @media (max-width: 767px) {
@@ -513,7 +529,35 @@ body {
   touch-action: none;
   width: 192px;
   z-index: 10;
-  transition: box-shadow 0.15s;
+  transition: box-shadow 0.15s, transform 0.15s, width 0.2s, min-height 0.2s;
+  /* Bind rotation to a local CSS variable */
+  transform: rotate(var(--rotation, 0deg));
+}
+
+/* Ensure rotated cards or zoomed elements are never clipped by boundaries */
+#wire-layer,
+#components-container {
+  overflow: visible !important;
+}
+
+/* Collapse styling for the compact/2D breadboard look */
+.compact-view .comp-card {
+  width: 110px !important;
+  min-height: 42px !important;
+}
+
+.compact-view .comp-body {
+  display: none !important;
+}
+
+.compact-view .comp-header {
+  border-bottom: none !important;
+  border-radius: var(--radius-lg);
+}
+
+.compact-view .term-node {
+  transform: scale(0.85);
+  background: var(--bg-dark);
 }
 
 .comp-card:hover {
