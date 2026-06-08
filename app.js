@@ -1947,7 +1947,11 @@ function updateWorkspaceHUD() {
     const isConnected = wires.some(w => w.from === termA || w.to === termA) &&
       wires.some(w => w.from === termB || w.to === termB);
 
-    const cur = isConnected ? ((cellV - (vA - vC)) / (comp.state.internalR || 1)) : 0.0;
+    let cur = isConnected ? ((cellV - (vA - vC)) / (comp.state.internalR || 1)) : 0.0;
+
+    // Filter out microvolt numerical convergence residuals when circuit is resting/off
+    if (Math.abs(cur) < 0.02) cur = 0.0;
+
     metricsHtml += `
       <div class="metric-row"><span>Soc (Charge)</span><span class="metric-val text-amber">${Math.round(comp.state.charge || 0)}%</span></div>
       <div class="metric-row"><span>EMF Voltage</span><span class="metric-val text-teal">${cellV.toFixed(2)} V</span></div>
@@ -2954,8 +2958,8 @@ function applyWorkspaceTransform() {
 }
 
 function handleWorkspaceWheel(e) {
-  // Disable zooming if a component is actively being dragged
-  if (draggedComponent || isDragging) {
+  // Lock out zooming during active drags or wiring adjustments
+  if (draggedComponent || isDragging || activeWireStart) {
     e.preventDefault();
     return;
   }
@@ -2979,7 +2983,8 @@ function handleWorkspaceWheel(e) {
 }
 
 function startWorkspacePan(e) {
-  if (draggedComponent || activeWireStart) return;
+  // Lock out panning during active drags or wiring adjustments
+  if (draggedComponent || isDragging || activeWireStart) return;
   const src = e.touches ? e.touches[0] : e;
 
   // 2-Finger or middle click/empty space touch triggers panning
@@ -3044,7 +3049,8 @@ function getTouchDistance(e) {
 
 // ─── SELECTION BOX LOGIC ──────────────────────────────────────────────────────
 function startWorkspaceSelect(e) {
-  if (draggedComponent || activeWireStart || e.button !== 0 || e.shiftKey) return;
+  // Lock out selection boxes during active drags or wiring adjustments
+  if (draggedComponent || isDragging || activeWireStart || e.button !== 0 || e.shiftKey) return;
 
   isSelecting = true;
   const coords = getPointerCoords(e);
