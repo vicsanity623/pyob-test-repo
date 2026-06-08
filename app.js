@@ -2470,27 +2470,45 @@ function simulationTick() {
 
   if (!nodeCount) return;
 
-  // Find ground node
-  let gndIdx = -1;
+  // Dynamic Multi-Island Ground Detection
+  const islandGnds = {}; // Maps each island's root node index to its local ground terminal node index
   const gndTypes = ['usb_power', 'bench_psu', 'solar_panel', 'signal_generator', 'battery_9v', 'battery_aa', 'battery_cr2032', 'battery_lipo', 'battery_lead', 'battery_18650', 'battery_aaa', 'battery_d', 'lemon_battery'];
-  for (let t of gndTypes) {
-    const c = components.find(c => c.type === t);
-    if (c) {
-      const gnd = c.terminals.find(t => t.label === 'GND' || t.label === '-');
-      if (gnd) { gndIdx = nodeMap[gnd.id]; break; }
+
+  // 1. Scan all active components to find and assign local grounds for each isolated circuit island
+  components.forEach(c => {
+    const gndTerm = c.terminals.find(t => t.label === 'GND' || t.label === '-');
+    if (gndTerm && gndTypes.includes(c.type)) {
+      const root = find(gndTerm.id);
+      const rootIdx = nodeMap[root];
+      const gndNodeIdx = nodeMap[gndTerm.id];
+      if (islandGnds[rootIdx] === undefined) {
+        islandGnds[rootIdx] = gndNodeIdx;
+      }
+    }
+  });
+
+  // 2. Fallback: Ensure every connected island has a locked reference node to prevent singular matrices
+  for (let i = 0; i < nodeCount; i++) {
+    if (islandGnds[i] === undefined) {
+      islandGnds[i] = i;
     }
   }
-  if (gndIdx === -1) gndIdx = 0;
+
+  const lockedGndNodes = new Set(Object.values(islandGnds));
 
   const V = new Array(nodeCount).fill(0.0);
-  if (lastVoltages && lastVoltages.length === nodeCount) V.forEach((_, i) => { V[i] = lastVoltages[i]; });
-  V[gndIdx] = 0.0;
+  if (lastVoltages && lastVoltages.length === nodeCount) {
+    V.forEach((_, i) => { V[i] = lastVoltages[i]; });
+  }
 
-  // Iterative nodal analysis (Gauss-Seidel)
+  // Lock all designated island ground reference nodes to exactly 0.0V
+  lockedGndNodes.forEach(idx => { V[idx] = 0.0; });
+
+  // Iterative nodal analysis (Gauss-Seidel) with locked multi-ground reference sets
   for (let iter = 0; iter < 200; iter++) {
     const nV = [...V];
     for (let i = 0; i < nodeCount; i++) {
-      if (i === gndIdx) continue;
+      if (lockedGndNodes.has(i)) continue; // Skip and lock local ground nodes at 0V
       let sumG = 0, sumGV = 0;
 
       components.forEach(comp => {
@@ -2738,13 +2756,13 @@ function simulationTick() {
 
       if (sumG > 0) nV[i] = sumGV / sumG; else nV[i] = 0;
     }
-    V.forEach((_, i) => { if (i !== gndIdx) V[i] = nV[i]; });
+    // Update non-ground nodes with the newly relaxed iterations
+    V.forEach((_, i) => { if (!lockedGndNodes.has(i)) V[i] = nV[i]; });
   }
 
-  V[gndIdx] = 0.0;
+  // Force reference ground potentials to exactly 0V
+  lockedGndNodes.forEach(idx => { V[idx] = 0.0; });
   lastVoltages = V;
-
-  // Update terminal voltages
   components.forEach(c => { c.terminals.forEach(t => { t.voltage = V[nodeMap[t.id]] || 0; }); });
 
   // Post-process updates
