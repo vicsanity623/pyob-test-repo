@@ -19,6 +19,9 @@ let isSelecting = false;
 let selectStart = { x: 0, y: 0 };
 let selectedComponents = new Set();
 let initialDragPositions = {};
+let selectionModeActive = false;
+let threeFingerStartPoints = [];
+let threeFingerStartTime = 0;
 let currentProjectName = "Default Project";
 let activeWireStart = null;
 let mousePosition = { x: 0, y: 0 };
@@ -2221,6 +2224,73 @@ function getBatteryEMF(type, charge) {
   return (defaultVoltages[type] || 1.5) * pct;
 }
 
+// ─── FLOATING GESTURE SHORTCUT BAR CONTROLS ──────────────────────────────────
+function toggleGestureShortcutBar() {
+  const bar = document.getElementById('gesture-shortcut-bar');
+  if (bar) bar.classList.toggle('visible');
+}
+
+function triggerShortcutAction(action) {
+  if (action === 'select_mode') {
+    selectionModeActive = !selectionModeActive;
+    
+    // Toggle active visual states on button
+    const btn = document.getElementById('sh-btn-select');
+    if (btn) btn.classList.toggle('active', selectionModeActive);
+    
+    // Clear selections if disabling mode
+    if (!selectionModeActive) {
+      selectedComponents.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('selected');
+      });
+      selectedComponents.clear();
+    }
+    
+    showToast(selectionModeActive ? 'Selection Tool ON' : 'Selection Tool OFF (Panning Active)', 'info');
+  } else if (action === 'undo') {
+    showToast('Undo', 'info');
+    // Call your local Undo handler here if available
+  } else if (action === 'redo') {
+    showToast('Redo', 'info');
+    // Call your local Redo handler here if available
+  } else if (action === 'cut') {
+    showToast('Cut', 'info');
+  } else if (action === 'copy') {
+    showToast('Copy', 'info');
+  } else if (action === 'paste') {
+    showToast('Paste', 'info');
+  }
+}
+
+// ─── THREE-FINGER TOUCH GESTURE TRACKER ────────────────────────────────────────
+function handleThreeFingerTouchStart(e) {
+  if (e.touches.length === 3) {
+    threeFingerStartTime = Date.now();
+    threeFingerStartPoints = Array.from(e.touches).map(t => ({ x: t.clientX, y: t.clientY }));
+  }
+}
+
+function handleThreeFingerTouchEnd(e) {
+  if (threeFingerStartPoints.length === 3) {
+    const duration = Date.now() - threeFingerStartTime;
+    const endPoints = Array.from(e.changedTouches || []).concat(Array.from(e.touches || []));
+    
+    if (duration < 250) {
+      // 1. Three-Finger Tap: Toggle floating shortcuts
+      toggleGestureShortcutBar();
+    } else if (endPoints.length >= 3) {
+      // 2. Three-Finger Horizontal Swipe (Undo / Redo)
+      const dx = endPoints[0].clientX - threeFingerStartPoints[0].x;
+      if (Math.abs(dx) > 60) {
+        if (dx > 0) triggerShortcutAction('redo');
+        else triggerShortcutAction('undo');
+      }
+    }
+    threeFingerStartPoints = [];
+  }
+}
+
 function getCustomCircuitMetrics() {
   let html = '';
   const sources = components.filter(c => ['usb_power', 'bench_psu', 'battery_9v', 'battery_aa', 'battery_cr2032', 'battery_lipo', 'battery_lead', 'battery_18650', 'battery_aaa', 'battery_d', 'diy_cell'].includes(c.type));
@@ -3052,25 +3122,23 @@ function handleWorkspaceWheel(e) {
 }
 
 function startWorkspacePan(e) {
-  // Lock out panning during active drags or wiring adjustments
-  if (draggedComponent || isDragging || activeWireStart) return;
-  const src = e.touches ? e.touches[0] : e;
+     // Lock out panning during active wire draws or card drags
+     if (draggedComponent || isDragging || activeWireStart) return;
+     const src = e.touches ? e.touches[0] : e;
+     
+     // Two-finger touch on mobile always handles panning and zooming
+     if (e.touches && e.touches.length === 2) {
+       isPanningWorkspace = true;
+       lastTouchDistance = getTouchDistance(e);
+       panStart.x = (e.touches[0].clientX + e.touches[1].clientX) / 2 - transformState.x;
+       panStart.y = (e.touches[0].clientY + e.touches[1].clientY) / 2 - transformState.y;
+       return;
+     }
 
-  // 2-Finger or middle click/empty space touch triggers panning
-  if (e.touches && e.touches.length === 2) {
-    isPanningWorkspace = true;
-    lastTouchDistance = getTouchDistance(e);
-    panStart.x = (e.touches[0].clientX + e.touches[1].clientX) / 2 - transformState.x;
-    panStart.y = (e.touches[0].clientY + e.touches[1].clientY) / 2 - transformState.y;
-    return;
-  }
-
-  if (e.button === 1 || e.button === 2 || !e.touches) {
-    isPanningWorkspace = true;
-    panStart.x = src.clientX - transformState.x;
-    panStart.y = src.clientY - transformState.y;
-  }
-}
+     isPanningWorkspace = true;
+     panStart.x = src.clientX - transformState.x;
+     panStart.y = src.clientY - transformState.y;
+   }
 
 function handleWorkspacePanAndZoom(e) {
   if (!isPanningWorkspace) return;
@@ -3348,17 +3416,28 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Canvas Navigation Listeners (Zoom & Pan)
   workspace.addEventListener('wheel', handleWorkspaceWheel, { passive: false });
-
-  // Direct Left-click to select boxes, and Right/Middle clicks to pan
+  
+  // Direct gesture event router (Left-clicks / touches)
   workspace.addEventListener('mousedown', e => {
-    if (e.button === 0) startWorkspaceSelect(e);
-    else startWorkspacePan(e);
+    if (e.button === 0) {
+      if (selectionModeActive) startWorkspaceSelect(e);
+      else startWorkspacePan(e);
+    } else {
+      startWorkspacePan(e); // Right/Middle clicks always pan
+    }
   });
-  workspace.addEventListener('touchstart', e => {
-    if (e.touches.length === 2) startWorkspacePan(e);
-    else startWorkspaceSelect(e);
-  }, { passive: false });
 
+  workspace.addEventListener('touchstart', e => {
+    if (e.touches.length === 3) {
+      handleThreeFingerTouchStart(e); // Track three-finger triggers
+    } else if (e.touches.length === 2) {
+      startWorkspacePan(e); // Two fingers always pan
+    } else {
+      if (selectionModeActive) startWorkspaceSelect(e);
+      else startWorkspacePan(e); // Default: single-finger panning
+    }
+  }, { passive: false });
+     
   document.addEventListener('mousemove', e => {
     handleWorkspaceSelect(e);
     handleWorkspacePanAndZoom(e);
@@ -3367,12 +3446,13 @@ window.addEventListener('DOMContentLoaded', () => {
     handleWorkspaceSelect(e);
     handleWorkspacePanAndZoom(e);
   }, { passive: false });
-
+     
   document.addEventListener('mouseup', () => {
     endWorkspaceSelect();
     stopWorkspacePan();
   });
-  document.addEventListener('touchend', () => {
+  document.addEventListener('touchend', e => {
+    handleThreeFingerTouchEnd(e);
     endWorkspaceSelect();
     stopWorkspacePan();
   });
@@ -3398,6 +3478,22 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('parts-search')?.addEventListener('input', e => filterParts(e.target.value));
 
   document.getElementById('btn-wires')?.addEventListener('click', openWireManager);
+  
+  // Programmatically generate and inject the iOS-like Floating Gesture Menu
+  const shortcutBar = document.createElement('div');
+  shortcutBar.id = 'gesture-shortcut-bar';
+  shortcutBar.className = 'gesture-shortcut-bar';
+  shortcutBar.innerHTML = `
+    <button class="shortcut-btn" title="Undo (Three-finger swipe left)" onclick="triggerShortcutAction('undo')">↶</button>
+    <button class="shortcut-btn" title="Cut" onclick="triggerShortcutAction('cut')">✂️</button>
+    <button class="shortcut-btn" title="Copy" onclick="triggerShortcutAction('copy')">📋</button>
+    <button class="shortcut-btn" title="Paste" onclick="triggerShortcutAction('paste')">📥</button>
+    <div class="shortcut-divider"></div>
+    <button id="sh-btn-select" class="shortcut-btn" title="Selection Tool Toggle" onclick="triggerShortcutAction('select_mode')">🎯</button>
+    <div class="shortcut-divider"></div>
+    <button class="shortcut-btn" title="Redo (Three-finger swipe right)" onclick="triggerShortcutAction('redo')">↷</button>
+  `;
+  document.body.appendChild(shortcutBar);
 
   // Programmatically mount the Telemetry HUD element inside the workspace viewport
   const hud = document.createElement('div');
