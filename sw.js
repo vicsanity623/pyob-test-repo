@@ -34,17 +34,18 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // 1. Audio: Cache-First (keep as is, these are large)
+  // 1. Audio: Cache-First (large assets)
   if (isAudioRequest(event.request)) {
     event.respondWith(handleAudio(event.request));
     return;
   }
 
   // 2. Everything else (HTML, JS, CSS, JSON): Network-First
-  // This ensures it checks the source before launching.
+  // Forces a network request to check the server first, falling back to cache if offline.
   event.respondWith(networkFirst(event.request));
 });
 
+// ── Strategies ────────────────────────────────────────────────
 async function networkFirst(request) {
   try {
     // Try network first
@@ -65,7 +66,6 @@ async function networkFirst(request) {
   }
 }
 
-// ── Strategies ────────────────────────────────────────────────
 async function cacheFirst(request) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -75,21 +75,6 @@ async function cacheFirst(request) {
     cache.put(request, response.clone());
   }
   return response;
-}
-
-async function networkFirst(request) {
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    return new Response('Offline', { status: 503 });
-  }
 }
 
 async function handleAudio(request) {
@@ -167,8 +152,6 @@ self.addEventListener('sync', event => {
 });
 
 async function syncPlaylists() {
-  // Playlists are stored in IndexedDB / localStorage on-device
-  // This hook is available for future server-side sync
   console.log('[SW] Playlist sync triggered');
 }
 
