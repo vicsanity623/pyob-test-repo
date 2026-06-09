@@ -124,7 +124,9 @@ const PARTS_CATALOGUE = [
       { type: 'led_white', icon: '🤍', iconClass: 'icon-active', name: 'LED White 5mm', desc: 'Vf 3.3V, If 20mA' },
       { type: 'npn_bc547', icon: '📉', iconClass: 'icon-active', name: 'NPN BC547', desc: 'Small signal BJT' },
       { type: 'pnp_bc557', icon: '📈', iconClass: 'icon-active', name: 'PNP BC557', desc: 'Small signal BJT' },
-      { type: 'npn_2n3904', icon: '📉', iconClass: 'icon-active', name: 'NPN 2N3904', desc: 'Workbench general-purpose NPN BJT' },
+      type: 'npn_2n3904', icon: '📉', iconClass: 'icon-active', name: 'NPN 2N3904', desc: 'Workbench general-purpose NPN BJT' },
+      { type: 'pnp_2n3906', icon: '📈', iconClass: 'icon-active', name: 'PNP 2N3906', desc: 'Workbench general-purpose PNP BJT' },
+      { type: 'npn_c2001', icon: '📉', iconClass: 'icon-active', name: 'NPN C2001', desc: 'Silicon NPN, 700mA AF Power Amp' },
       { type: 'pnp_2n3906', icon: '📈', iconClass: 'icon-active', name: 'PNP 2N3906', desc: 'Workbench general-purpose PNP BJT' },
       { type: 'pnp_bc557', icon: '📈', iconClass: 'icon-active', name: 'PNP BC557', desc: 'Small signal BJT' },
       { type: 'mosfet_2n7000', icon: '🧱', iconClass: 'icon-active', name: 'N-ch 2N7000', desc: 'Small signal MOSFET' },
@@ -333,6 +335,10 @@ function buildComponent(type, id, existingComponents) {
     case 'led_rgb':
       terminals = makeTerminals(id, [{ label: 'R+', x: 20, y: 105 }, { label: 'G+', x: 60, y: 105 }, { label: 'B+', x: 100, y: 105 }, { label: 'K-', x: 140, y: 105 }]);
       state = { blownR: false, blownG: false, blownB: false, name: 'RGB LED' };
+      break;
+    case 'npn_c2001':
+      terminals = makeTerminals(id, [{ label: 'C', x: 96, y: 0 }, { label: 'B', x: 0, y: 82 }, { label: 'E', x: 192, y: 82 }]);
+      state = { current_b: 0.0, beta: 300, name: 'C2001 NPN', vbe_on: 0.7 };
       break;
     case 'npn_2n3904':
       terminals = makeTerminals(id, [{ label: 'C', x: 96, y: 0 }, { label: 'B', x: 0, y: 82 }, { label: 'E', x: 192, y: 82 }]);
@@ -573,6 +579,7 @@ function buildCardBody(comp) {
     case 'npn_bc547': case 'pnp_bc557':
     case 'npn_transistor': case 'pnp_transistor':
     case 'npn_2n3904': case 'pnp_2n3906':
+    case 'npn_c2001':
       const polarity = (comp.type.startsWith('npn')) ? 'NPN' : 'PNP';
       return `<div class="flex flex-col gap-1.5 items-center">
            <div class="font-mono" style="font-size:9px;color:var(--text-secondary)">${comp.state.name} – ${polarity} BJT</div>
@@ -2703,7 +2710,7 @@ function simulationTick() {
           const R = state.pressed ? 0.01 : 1e8; const G = 1 / R; const nb = (n1 === i) ? n2 : n1;
           if (n1 === i || n2 === i) { sumG += G; sumGV += G * V[nb]; }
         }
-        else if (type === 'npn_transistor' || type === 'npn_bc547' || type === 'npn_2n3904') {
+        else if (type === 'npn_transistor' || type === 'npn_bc547' || type === 'npn_2n3904' || type === 'npn_c2001') {
           const nC = T('C'), nB = T('B'), nE = T('E'); if (nC === undefined || nB === undefined || nE === undefined) return;
           // B-E junction
           const vbe = V[nB] - V[nE], active = vbe > 0.7;
@@ -2954,7 +2961,7 @@ function simulationTick() {
       if (oscData[id].ch1.length > 200) { oscData[id].ch1.shift(); oscData[id].ch2.shift(); }
       drawScope(id);
     }
-    else if (type === 'npn_transistor' || type === 'pnp_transistor' || type === 'npn_bc547' || type === 'pnp_bc557' || type === 'npn_2n3904' || type === 'pnp_2n3906') {
+    else if (type === 'npn_transistor' || type === 'pnp_transistor' || type === 'npn_bc547' || type === 'pnp_bc557' || type === 'npn_2n3904' || type === 'pnp_2n3906' || type === 'npn_c2001') {
       const vB = tv('B'), vC = tv('C'), vE = tv('E');
       const vbe = type === 'npn_transistor' ? (vB - vE) : (vE - vB);
       const vce = vC - vE;
