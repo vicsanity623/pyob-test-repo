@@ -2320,49 +2320,177 @@ function handleThreeFingerTouchEnd(e) {
   }
 }
 
-// ─── CLIPBOARD CUT, COPY, & PASTE ENGINES ──────────────────────────────────────
-let clipboardComponentType = null;
+// ─── CLIPBOARD SUB-CIRCUIT CLONING ENGINES ─────────────────────────────────────
+let clipboardSnapshot = null;
 
 function executeCut() {
-  if (!selectedComponentId) {
-    showToast('Select a component card to Cut', 'warn');
+  // Collect target IDs (supports both multi-selection and single-card selection)
+  const targetIds = selectedComponents.size > 0 ? new Set(selectedComponents) :
+    selectedComponentId ? new Set([selectedComponentId]) : null;
+
+  if (!targetIds || targetIds.size === 0) {
+    showToast('Select components to Cut', 'warn');
     return;
   }
-  const comp = components.find(c => c.id === selectedComponentId);
-  if (comp) {
-    clipboardComponentType = comp.type;
-    removeComponent(selectedComponentId); // Safely deletes from board
-    selectedComponentId = null;
-    updateWorkspaceHUD();
-    showToast(`Cut ${comp.type.replace(/_/g, ' ')} to clipboard`, 'info');
-  }
+
+  // Create a snapshot copy of the selection group before deleting
+  executeCopy();
+
+  // Safely delete selected cards from the board
+  targetIds.forEach(id => removeComponent(id));
+
+  selectedComponents.clear();
+  selectedComponentId = null;
+  updateWorkspaceHUD();
+  showToast('Selection cut to clipboard', 'info');
 }
 
 function executeCopy() {
-  if (!selectedComponentId) {
-    showToast('Select a component card to Copy', 'warn');
+  const targetIds = selectedComponents.size > 0 ? new Set(selectedComponents) :
+    selectedComponentId ? new Set([selectedComponentId]) : null;
+
+  if (!targetIds || targetIds.size === 0) {
+    showToast('Select components to Copy', 'warn');
     return;
   }
-  const comp = components.find(c => c.id === selectedComponentId);
-  if (comp) {
-    clipboardComponentType = comp.type;
-    showToast(`Copied ${comp.type.replace(/_/g, ' ')} to clipboard`, 'info');
-  }
+
+  // 1. Determine the relative origin of the selected group
+  let minX = Infinity, minY = Infinity;
+  targetIds.forEach(id => {
+    const comp = components.find(c => c.id === id);
+    if (comp) {
+      minX = Math.min(minX, comp.x);
+      minY = Math.min(minY, comp.y);
+    }
+  });
+
+  // 2. Clone component states and relative positions
+  const copiedComps = [];
+  targetIds.forEach(id => {
+    const c = components.find(comp => comp.id === id);
+    if (c) {
+      copiedComps.push({
+        type: c.type,
+        x: c.x - minX, // Offset relative to the group origin
+        y: c.y - minY,
+        rotation: c.rotation || 0,
+        state: JSON.parse(JSON.stringify(c.state)), // Deep clone parameters
+        oldId: c.id
+      });
+    }
+  });
+
+  // 3. Clone wires connecting *exclusively* between these copied components
+  const copiedWires = [];
+  wires.forEach(w => {
+    const compFrom = components.find(c => c.terminals.some(t => t.id === w.from));
+    const compTo = components.find(c => c.terminals.some(t => t.id === w.to));
+    if (compFrom && compTo && targetIds.has(compFrom.id) && targetIds.has(compTo.id)) {
+      const termFrom = compFrom.terminals.find(t => t.id === w.from);
+      const termTo = compTo.terminals.find(t => t.id === w.to);
+      if (termFrom && termTo) {
+        copiedWires.push({
+          fromCompOldId: compFrom.id,
+          fromTermLabel: termFrom.label,
+          toCompOldId: compTo.id,
+          toTermLabel: termTo.label,
+          color: w.color
+        });
+      }
+    }
+  });
+
+  // Store entire sub-circuit package in clipboard
+  clipboardSnapshot = {
+    components: copiedComps,
+    wires: copiedWires
+  };
+
+  showToast(`Copied ${copiedComps.length} component(s) to clipboard`, 'info');
 }
 
 function executePaste() {
-  if (!clipboardComponentType) {
+  if (!clipboardSnapshot || clipboardSnapshot.components.length === 0) {
     showToast('Clipboard is empty', 'warn');
     return;
   }
 
-  // Paste exactly at the user's hovering mouse pointer or touch point
-  const pasteX = Math.max(10, mousePosition.x - 96);
-  const pasteY = Math.max(10, mousePosition.y - 50);
+  const idMap = {}; // Maps old component IDs to the new pasted IDs for re-wiring
+  const newlyPastedIds = new Set();
+  const gridSize = 24;
 
-  // Spawns a brand-new, non-mirrored default instance of that part
-  addComponent(clipboardComponentType, pasteX, pasteY);
-  showToast(`Pasted fresh ${clipboardComponentType.replace(/_/g, ' ')} ✓`, 'success');
+  // Clear active selection states to focus on the newly pasted block
+  selectedComponents.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('selected');
+  });
+  selectedComponents.clear();
+
+  // 1. Rebuild and render components with exact cloned states
+  clipboardSnapshot.components.forEach(c => {
+    const newId = c.type + '_' + Math.random().toString(36).substr(2, 9);
+    idMap[c.oldId] = newId;
+    newlyPastedIds.add(newId);
+
+    // Snap coordinate placement to the nearest 24px grid dot relative to mouse pointer
+    const nx = Math.round((mousePosition.x + c.x) / gridSize) * gridSize;
+    const ny = Math.round((mousePosition.y + c.y) / gridSize) * gridSize;
+
+    const { terminals, state } = buildComponent(c.type, newId, components);
+    const mergedState = JSON.parse(JSON.stringify(c.state)); // Retain configurations
+
+    const newComp = {
+      id: newId,
+      type: c.type,
+      x: nx,
+      y: ny,
+      rotation: c.rotation || 0,
+      terminals,
+      state: mergedState
+    };
+
+    components.push(newComp);
+    renderComponent(newComp);
+  });
+
+  // 2. Re-route and establish wire connections matching the relative port labels
+  clipboardSnapshot.wires.forEach(w => {
+    const newFromId = idMap[w.fromCompOldId];
+    const newToId = idMap[w.toCompOldId];
+    if (newFromId && newToId) {
+      const compFrom = components.find(c => c.id === newFromId);
+      const compTo = components.find(c => c.id === newToId);
+      if (compFrom && compTo) {
+        const termFrom = compFrom.terminals.find(t => t.label === w.fromTermLabel);
+        const termTo = compTo.terminals.find(t => t.label === w.toTermLabel);
+        if (termFrom && termTo) {
+          wires.push({
+            from: termFrom.id,
+            to: termTo.id,
+            color: w.color
+          });
+        }
+      }
+    }
+  });
+
+  // 3. Highlight the newly pasted circuit block as the active selection
+  newlyPastedIds.forEach(id => {
+    selectedComponents.add(id);
+    const el = document.getElementById(id);
+    if (el) el.classList.add('selected');
+  });
+
+  if (newlyPastedIds.size === 1) {
+    selectedComponentId = Array.from(newlyPastedIds)[0];
+  } else {
+    selectedComponentId = null;
+  }
+
+  updateWires();
+  updateWorkspaceHUD();
+  saveWorkspaceToLocalStorage(); // Auto-save changes
+  showToast(`Pasted sub-circuit block ✓`, 'success');
 }
 
 function getCustomCircuitMetrics() {
