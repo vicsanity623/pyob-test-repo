@@ -1496,6 +1496,7 @@ select:focus {
   border: none !important;
   box-shadow: none !important;
   cursor: grab;
+  overflow: visible !important;
 }
 
 .comp-card[data-type="solder_joint"] .comp-header {

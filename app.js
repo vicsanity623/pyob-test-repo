@@ -909,6 +909,26 @@ function renderComponent(comp) {
     div.addEventListener('touchstart', e => {
       startDrag(e, comp.id);
     });
+
+    // Append direct-edit text input beneath the junction pad
+    const labelDiv = document.createElement('div');
+    labelDiv.style = 'position: absolute; top: 32px; left: 50%; transform: translateX(-50%); width: 120px; text-align: center; pointer-events: auto;';
+    labelDiv.innerHTML = `
+      <input type="text" id="${comp.id}-label-input" value="${comp.state.name || 'Junction'}" 
+             style="background: transparent; border: none; border-bottom: 1.5px dashed rgba(0, 229, 200, 0.35); color: var(--teal); font-family: var(--font-mono); font-size: 10px; font-weight: bold; text-align: center; width: 100%; outline: none;"
+             onfocus="this.style.borderBottomColor='var(--teal)';"
+             onblur="this.style.borderBottomColor='rgba(0, 229, 200, 0.35)';"
+             onchange="updateSolderJointLabel('${comp.id}', this.value)">
+    `;
+
+    // Stop event propagation so typing on the label doesn't drag the card
+    const stop = e => e.stopPropagation();
+    labelDiv.addEventListener('mousedown', stop);
+    labelDiv.addEventListener('touchstart', stop);
+    labelDiv.addEventListener('mousemove', stop);
+    labelDiv.addEventListener('touchmove', stop);
+
+    div.appendChild(labelDiv);
   }
 
   // Prevent sliding, typing, and button clicks from bubbling up and triggering workspace panning
@@ -919,7 +939,7 @@ function renderComponent(comp) {
     el.addEventListener('mousemove', stop);
     el.addEventListener('touchmove', stop);
   });
-  
+
   updateResistorBandsForComp(comp);
 }
 
@@ -1042,12 +1062,19 @@ function updateToneGenerator(id, field, val) {
   const comp = components.find(c => c.id === id);
   if (!comp) return;
   comp.state[field] = parseFloat(val) || 1.0;
-  
+
   // Real-time UI updates
   if (field === 'frequency') {
     safeSetText(`${id}-display`, comp.state.frequency.toFixed(1) + ' Hz');
   }
-  
+
+  saveWorkspaceToLocalStorage();
+}
+
+function updateSolderJointLabel(id, val) {
+  const comp = components.find(c => c.id === id);
+  if (!comp) return;
+  comp.state.name = val || 'Junction';
   saveWorkspaceToLocalStorage();
 }
 
@@ -1252,12 +1279,12 @@ function startWire(e, termId) {
   if (isDragging) return;
   e.stopPropagation();
   e.preventDefault();
-  
+
   // Cancel any active wire if clicking same terminal twice
-  if (activeWireStart === termId) { 
-    activeWireStart = null; 
-    updateWires(); 
-    return; 
+  if (activeWireStart === termId) {
+    activeWireStart = null;
+    updateWires();
+    return;
   }
 
   // Solder Joint Check: Find the component associated with this terminal
@@ -1266,7 +1293,7 @@ function startWire(e, termId) {
 
   // UE5-Style Detach: Skip detach logic entirely if this is a solder joint terminal
   const connectedWireIdx = isSolderJoint ? -1 : wires.findIndex(w => w.from === termId || w.to === termId);
-  
+
   if (connectedWireIdx !== -1) {
     const wire = wires[connectedWireIdx];
 
@@ -1632,10 +1659,9 @@ function toggleSidebar(panelId) {
 }
 
 // ─── TUTORIAL GUIDE ───────────────────────────────────────────────────────────
-// ─── TUTORIAL GUIDE ───────────────────────────────────────────────────────────
 const tutorialGuides = {
   lead_acid: {
-    title: "1. DIY 4.0V Epsom-Salt Battery",
+    title: "DIY 4.0V Epsom-Salt Battery",
     steps: [
       { id: 'step-1', title: "Step 1: Placement", desc: "Place 1× USB Power Supply and 2× DIY Epsom-Salt Cells onto the workspace." },
       { id: 'step-2', title: "Step 2: Series Connection", desc: "Connect the Positive terminal (+) of Cell 1 to the Negative terminal (−) of Cell 2 with a blue wire to build a 2-cell series battery." },
@@ -1657,7 +1683,7 @@ const tutorialGuides = {
     }
   },
   solar_charge: {
-    title: "2. 12V Solar Charging Regulator",
+    title: "12V Solar Charging Regulator",
     steps: [
       { id: 'step-1', title: "Step 1: Place Components", desc: "Add 1× 12V Solar Panel, 1× 1000µF Capacitor, and 1× SPST Switch onto the workspace." },
       { id: 'step-2', title: "Step 2: Wire Circuit", desc: "Connect Solar Panel (+) to Switch 'In' terminal with an orange wire, Switch 'Out' terminal to Capacitor (+) with an orange wire, and Solar Panel (−) directly to Capacitor (−) with a blue wire." },
@@ -1676,7 +1702,7 @@ const tutorialGuides = {
     }
   },
   class_a_amp: {
-    title: "3. Class-A BJT Amplifier",
+    title: "Class-A BJT Amplifier",
     steps: [
       { id: 'step-1', title: "Step 1: Place Parts", desc: "Add 1× USB 5V, 1× Signal Generator, 1× NPN Transistor (C1815), 1× 1kΩ Resistor, and 1× Multimeter." },
       { id: 'step-2', title: "Step 2: Pull-Up Network", desc: "Connect USB 5V (+) to Resistor Terminal A, Resistor Terminal B to Transistor Collector (C), and Transistor Emitter (E) directly to USB GND (−) using a blue wire." },
@@ -1702,7 +1728,7 @@ const tutorialGuides = {
     }
   },
   voltage_divider: {
-    title: "4. Voltage Divider + LED",
+    title: "Voltage Divider + LED",
     steps: [
       { id: 'step-1', title: "Step 1: Place Parts", desc: "Add 1× USB 5V, 2× Resistors (R1 and R2), and 1× Red LED onto the workspace." },
       { id: 'step-2', title: "Step 2: Divider", desc: "Connect USB 5V (+) to R1-A, R1-B to R2-A, and R2-B to USB GND (−) to form a series voltage divider path." },
@@ -1719,7 +1745,7 @@ const tutorialGuides = {
     }
   },
   voltage_reg: {
-    title: "5. LM7805 5V Regulator",
+    title: "LM7805 5V Regulator",
     steps: [
       { id: 'step-1', title: "Step 1: Place Parts", desc: "Place 1× 12V Bench PSU, 1× LM7805 Regulator, 1× Solder Joint (Common GND), and 1× Multimeter." },
       { id: 'step-2', title: "Step 2: Input Power", desc: "Connect Bench PSU (+) to LM7805 IN terminal with a red wire, and Bench PSU (GND) to your Solder Joint with a blue wire." },
@@ -1739,7 +1765,7 @@ const tutorialGuides = {
     }
   },
   led_blink: {
-    title: "6. NE555 LED Blinker",
+    title: "NE555 LED Blinker",
     steps: [
       { id: 'step-1', title: "Step 1: Core Parts", desc: "Place 1× USB 5V, 1× NE555 Timer, 1× 10µF Capacitor, 2× Resistors (R1 and R2), and 1× Red LED." },
       { id: 'step-2', title: "Step 2: Astable Wiring", desc: "Connect NE555 Trigger (TRG) directly to Threshold (THR). Connect Vcc to USB 5V (+) and GND to USB GND (−). Wire charging resistors in series to the threshold pin." },
@@ -1756,7 +1782,7 @@ const tutorialGuides = {
     }
   },
   spectrum_analyzer: {
-    title: "7. 3-Band Spectrum Analyzer",
+    title: "3-Band Spectrum Analyzer",
     steps: [
       { id: 'step-1', title: "Step 1: Frame Rails", desc: "Place a 12V Bench PSU, a Tone Generator, and three Solder Joints (Label them: Common Ground, Preamp Output, and VCC Rail). Connect Bench PSU (GND) to the Ground Solder Joint, and Bench PSU (+) to the VCC Rail Joint." },
       { id: 'step-2', title: "Step 2: Pre-Amplifier", desc: "Place a C1815 NPN Transistor, 10kΩ and 33kΩ Resistors, and a 10µF Capacitor. Wire Tone Generator (+) to Capacitor (+) terminal, Capacitor (−) to Transistor Base (B). Connect a 33kΩ resistor from Base to VCC, and a 10kΩ resistor from Base to GND." },
@@ -1771,7 +1797,7 @@ const tutorialGuides = {
       const gen = components.find(c => c.type === 'tone_generator');
       const psuV = psu ? psu.state.voltage || 0.0 : 0.0;
       const genF = gen ? gen.state.frequency || 0.0 : 0.0;
-      
+
       let bandText = "OFFLINE";
       if (genF > 0) {
         if (genF >= 20 && genF <= 250) bandText = "BASS ACTIVE (LPF Channel)";
@@ -1788,7 +1814,7 @@ const tutorialGuides = {
     }
   },
   custom: {
-    title: "8. Custom Sandbox (Free Play)",
+    title: "Custom Sandbox (Free Play)",
     steps: [
       { id: 'step-1', title: "Sandbox Active", desc: "Build any circuit you like! Active connections and loops will print out live analytics down below." }
     ],
@@ -2757,7 +2783,7 @@ function updateStepStyle(id, passed, locked = false) {
 
 function evaluateActiveTutorial(nodeMap) {
   const steps = tutorialGuides[currentTutorial].steps;
-  
+
   if (currentTutorial === 'lead_acid') {
     const cells = components.filter(c => c.type === 'diy_cell');
     const pwr = components.find(c => c.type === 'usb_power');
@@ -2862,7 +2888,7 @@ function evaluateActiveTutorial(nodeMap) {
     const s1 = !!(pwr && rs.length >= 2 && leds.length >= 1);
     updateStepStyle('step-1', s1);
     if (!s1) { ['step-2', 'step-3', 'step-4'].forEach(s => updateStepStyle(s, false, true)); return; }
-    
+
     let s2 = false;
     if (pwr && rs.length >= 2) {
       const v5 = nodeMap[pwr.terminals.find(t => t.label === '5V')?.id];
@@ -2871,9 +2897,9 @@ function evaluateActiveTutorial(nodeMap) {
       const r1b = nodeMap[rs[0].terminals.find(t => t.label === 'B')?.id];
       const r2a = nodeMap[rs[1].terminals.find(t => t.label === 'A')?.id];
       const r2b = nodeMap[rs[1].terminals.find(t => t.label === 'B')?.id];
-      
+
       if (((v5 === r1a && r1b === r2a && r2b === vg) || (v5 === r1b && r1a === r2a && r2b === vg) ||
-           (v5 === r1a && r1b === r2b && r2a === vg) || (v5 === r1b && r1a === r2b && r2a === vg)) && v5 !== undefined) {
+        (v5 === r1a && r1b === r2b && r2a === vg) || (v5 === r1b && r1a === r2b && r2a === vg)) && v5 !== undefined) {
         s2 = true;
       }
     }
@@ -3099,8 +3125,8 @@ function simulationTick() {
           const termA = terminals[0]?.id;
           const termB = terminals[1]?.id;
           const isConnected = wires.some(w => w.from === termA || w.to === termA) &&
-                              wires.some(w => w.from === termB || w.to === termB);
-          
+            wires.some(w => w.from === termB || w.to === termB);
+
           if (isConnected) {
             twoPort(T('+'), T('-'), state.outputVoltage, 50);
           } else {
@@ -3340,14 +3366,14 @@ function simulationTick() {
     }
     else if (type === 'tone_generator') {
       safeSetText(`${id}-display`, state.frequency.toFixed(1) + ' Hz');
-      
+
       // Update inputs dynamically without interrupting active typing/focus states
       const slide = document.getElementById(`${id}-freq-slide`);
       if (slide && document.activeElement !== slide) slide.value = state.frequency;
-      
+
       const text = document.getElementById(`${id}-freq-text`);
       if (text && document.activeElement !== text) text.value = state.frequency;
-      
+
       const amp = document.getElementById(`${id}-amp-text`);
       if (amp && document.activeElement !== amp) amp.value = state.amplitude;
     }
