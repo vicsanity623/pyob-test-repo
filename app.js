@@ -2737,6 +2737,7 @@ function updateStepStyle(id, passed, locked = false) {
 
 function evaluateActiveTutorial(nodeMap) {
   const steps = tutorialGuides[currentTutorial].steps;
+  
   if (currentTutorial === 'lead_acid') {
     const cells = components.filter(c => c.type === 'diy_cell');
     const pwr = components.find(c => c.type === 'usb_power');
@@ -2747,8 +2748,10 @@ function evaluateActiveTutorial(nodeMap) {
     if (!s1) { ['step-2', 'step-3', 'step-4', 'step-5'].forEach(s => updateStepStyle(s, false, true)); return; }
     let series = false;
     if (cells.length >= 2) {
-      const c1p = nodeMap[cells[0].terminals.find(t => t.label === '+')?.id], c1n = nodeMap[cells[0].terminals.find(t => t.label === '-')?.id];
-      const c2p = nodeMap[cells[1].terminals.find(t => t.label === '+')?.id], c2n = nodeMap[cells[1].terminals.find(t => t.label === '-')?.id];
+      const c1p = nodeMap[cells[0].terminals.find(t => t.label === '+')?.id];
+      const c1n = nodeMap[cells[0].terminals.find(t => t.label === '-')?.id];
+      const c2p = nodeMap[cells[1].terminals.find(t => t.label === '+')?.id];
+      const c2n = nodeMap[cells[1].terminals.find(t => t.label === '-')?.id];
       if ((c1n === c2p && c1n !== undefined) || (c2n === c1p && c2n !== undefined)) series = true;
     }
     updateStepStyle('step-2', series, !s1);
@@ -2764,7 +2767,7 @@ function evaluateActiveTutorial(nodeMap) {
   }
   else if (currentTutorial === 'solar_charge') {
     const solar = components.find(c => c.type === 'solar_panel');
-    const caps = components.filter(c => ['capacitor', 'cap_100n', 'cap_10u'].includes(c.type));
+    const caps = components.filter(c => ['capacitor', 'cap_100n', 'cap_10u', 'cap_0u47', 'cap_2n2', 'cap_33n'].includes(c.type));
     const sw = components.filter(c => c.type === 'spst_switch');
     const s1 = !!(solar && caps.length > 0 && sw.length > 0);
     updateStepStyle('step-1', s1);
@@ -2789,7 +2792,7 @@ function evaluateActiveTutorial(nodeMap) {
   }
   else if (currentTutorial === 'class_a_amp') {
     const gen = components.find(c => c.type === 'signal_generator');
-    const npn = components.find(c => c.type === 'npn_transistor');
+    const npn = components.find(c => ['npn_transistor', 'npn_bc547', 'npn_2n3904', 'npn_c2001', 'npn_c1815'].includes(c.type));
     const rs = components.filter(c => c.type.startsWith('resistor'));
     const mm = components.filter(c => c.type === 'multimeter');
     const pwr = components.find(c => c.type === 'usb_power');
@@ -2831,6 +2834,137 @@ function evaluateActiveTutorial(nodeMap) {
     const vC = npn.terminals.find(t => t.label === 'C')?.voltage || 0;
     const s5 = rs[0].state.resistance >= 800 && rs[0].state.resistance <= 1200 && vC > 0.5 && vC < 4.5;
     updateStepStyle('step-5', s5, !s4);
+  }
+  else if (currentTutorial === 'voltage_divider') {
+    const pwr = components.find(c => c.type === 'usb_power');
+    const rs = components.filter(c => c.type.startsWith('resistor'));
+    const leds = components.filter(c => c.type.startsWith('led'));
+    const s1 = !!(pwr && rs.length >= 2 && leds.length >= 1);
+    updateStepStyle('step-1', s1);
+    if (!s1) { ['step-2', 'step-3', 'step-4'].forEach(s => updateStepStyle(s, false, true)); return; }
+    
+    let s2 = false;
+    if (pwr && rs.length >= 2) {
+      const v5 = nodeMap[pwr.terminals.find(t => t.label === '5V')?.id];
+      const vg = nodeMap[pwr.terminals.find(t => t.label === 'GND')?.id];
+      const r1a = nodeMap[rs[0].terminals.find(t => t.label === 'A')?.id];
+      const r1b = nodeMap[rs[0].terminals.find(t => t.label === 'B')?.id];
+      const r2a = nodeMap[rs[1].terminals.find(t => t.label === 'A')?.id];
+      const r2b = nodeMap[rs[1].terminals.find(t => t.label === 'B')?.id];
+      
+      if (((v5 === r1a && r1b === r2a && r2b === vg) || (v5 === r1b && r1a === r2a && r2b === vg) ||
+           (v5 === r1a && r1b === r2b && r2a === vg) || (v5 === r1b && r1a === r2b && r2a === vg)) && v5 !== undefined) {
+        s2 = true;
+      }
+    }
+    updateStepStyle('step-2', s2, !s1);
+    if (!s2) { ['step-3', 'step-4'].forEach(s => updateStepStyle(s, false, true)); return; }
+
+    const s3 = rs.some(r => Math.abs(r.state.resistance - 220) < 20);
+    updateStepStyle('step-3', s3, !s2);
+    if (!s3) { updateStepStyle('step-4', false, true); return; }
+
+    const s4 = leds.some(l => l.state.current > 0.001);
+    updateStepStyle('step-4', s4, !s3);
+
+  } else if (currentTutorial === 'voltage_reg') {
+    const psu = components.find(c => c.type === 'bench_psu');
+    const reg = components.find(c => c.type === 'lm7805');
+    const joint = components.find(c => c.type === 'solder_joint');
+    const s1 = !!(psu && reg && joint);
+    updateStepStyle('step-1', s1);
+    if (!s1) { ['step-2', 'step-3', 'step-4'].forEach(s => updateStepStyle(s, false, true)); return; }
+
+    let s2 = false;
+    if (psu && reg && joint) {
+      const pp = nodeMap[psu.terminals.find(t => t.label === '+')?.id];
+      const pg = nodeMap[psu.terminals.find(t => t.label === 'GND')?.id];
+      const ri = nodeMap[reg.terminals.find(t => t.label === 'IN')?.id];
+      const jn = nodeMap[joint.terminals[0]?.id];
+      if (pp === ri && pg === jn && pp !== undefined) s2 = true;
+    }
+    updateStepStyle('step-2', s2, !s1);
+    if (!s2) { ['step-3', 'step-4'].forEach(s => updateStepStyle(s, false, true)); return; }
+
+    let s3 = false;
+    if (reg && joint) {
+      const rg = nodeMap[reg.terminals.find(t => t.label === 'GND')?.id];
+      const jn = nodeMap[joint.terminals[0]?.id];
+      if (rg === jn && rg !== undefined) s3 = true;
+    }
+    updateStepStyle('step-3', s3, !s2);
+    if (!s3) { updateStepStyle('step-4', false, true); return; }
+
+    let s4 = false;
+    const dmm = components.find(c => c.type === 'multimeter');
+    if (reg && joint && dmm) {
+      const ro = nodeMap[reg.terminals.find(t => t.label === 'OUT')?.id];
+      const jn = nodeMap[joint.terminals[0]?.id];
+      const mr = nodeMap[mm[0]?.terminals.find(t => t.label === 'VΩ+')?.id];
+      const mb = nodeMap[mm[0]?.terminals.find(t => t.label === 'COM-')?.id];
+      if (mr === ro && mb === jn && mr !== undefined && dmm.state.mode === 'voltage' && Math.abs(dmm.state.value - 5.0) < 0.2) s4 = true;
+    }
+    updateStepStyle('step-4', s4, !s3);
+
+  } else if (currentTutorial === 'led_blink') {
+    const timer = components.find(c => c.type === 'ne555');
+    const cap = components.find(c => ['capacitor', 'cap_10u', 'cap_0u47', 'cap_2n2', 'cap_33n'].includes(c.type));
+    const rs = components.filter(c => c.type.startsWith('resistor'));
+    const leds = components.filter(c => c.type.startsWith('led'));
+    const s1 = !!(timer && cap && rs.length >= 2 && leds.length >= 1);
+    updateStepStyle('step-1', s1);
+    if (!s1) { ['step-2', 'step-3'].forEach(s => updateStepStyle(s, false, true)); return; }
+
+    let s2 = false;
+    if (timer) {
+      const trg = nodeMap[timer.terminals.find(t => t.label === 'TRG')?.id];
+      const thr = nodeMap[timer.terminals.find(t => t.label === 'THR')?.id];
+      if (trg === thr && trg !== undefined) s2 = true;
+    }
+    updateStepStyle('step-2', s2, !s1);
+    if (!s2) { updateStepStyle('step-3', false, true); return; }
+
+    let s3 = false;
+    if (timer && leds.length) {
+      const out = nodeMap[timer.terminals.find(t => t.label === 'OUT')?.id];
+      const la = nodeMap[leds[0].terminals.find(t => t.label === 'A+')?.id];
+      if (out === la && out !== undefined) s3 = true;
+    }
+    updateStepStyle('step-3', s3, !s2);
+
+  } else if (currentTutorial === 'spectrum_analyzer') {
+    const psu = components.find(c => c.type === 'bench_psu');
+    const gen = components.find(c => c.type === 'tone_generator');
+    const joints = components.filter(c => c.type === 'solder_joint');
+    const s1 = !!(psu && gen && joints.length >= 3);
+    updateStepStyle('step-1', s1);
+    if (!s1) { ['step-2', 'step-3', 'step-4', 'step-5', 'step-6', 'step-7'].forEach(s => updateStepStyle(s, false, true)); return; }
+
+    const hasPre = components.some(c => ['npn_c1815', 'npn_transistor', 'npn_2n3904', 'npn_c2001'].includes(c.type));
+    const hasCap = components.some(c => ['cap_10u', 'capacitor'].includes(c.type));
+    const s2 = s1 && hasPre && hasCap;
+    updateStepStyle('step-2', s2, !s1);
+    if (!s2) { ['step-3', 'step-4', 'step-5', 'step-6', 'step-7'].forEach(s => updateStepStyle(s, false, true)); return; }
+
+    const s3 = s2 && components.some(c => c.type === 'cap_33n');
+    updateStepStyle('step-3', s3, !s2);
+    if (!s3) { ['step-4', 'step-5', 'step-6', 'step-7'].forEach(s => updateStepStyle(s, false, true)); return; }
+
+    const s4 = s3 && components.some(c => c.type === 'cap_4n7') && components.some(c => c.type === 'cap_2n2');
+    updateStepStyle('step-4', s4, !s3);
+    if (!s4) { ['step-5', 'step-6', 'step-7'].forEach(s => updateStepStyle(s, false, true)); return; }
+
+    const s5 = s4 && components.some(c => c.type === 'cap_470p');
+    updateStepStyle('step-5', s5, !s4);
+    if (!s5) { ['step-6', 'step-7'].forEach(s => updateStepStyle(s, false, true)); return; }
+
+    const leds = components.filter(c => c.type.startsWith('led'));
+    const s6 = s5 && leds.length >= 3;
+    updateStepStyle('step-6', s6, !s5);
+    if (!s6) { updateStepStyle('step-7', false, true); return; }
+
+    const s7 = s6; // test complete
+    updateStepStyle('step-7', s7, !s6);
   }
 }
 
