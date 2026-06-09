@@ -304,6 +304,14 @@ function buildComponent(type, id, existingComponents) {
       terminals = makeTerminals(id, [{ label: 'A', x: 0, y: 50 }, { label: 'B', x: 192, y: 50 }]);
       state = { inductance: 100e-6, current: 0.0, name: '100µH' };
       break;
+    case 'diode_1n4148':
+      terminals = makeTerminals(id, [{ label: 'A+', x: 0, y: 62 }, { label: 'K-', x: 192, y: 62 }]);
+      state = { vf: 0.7, name: '1N4148' };
+      break;
+    case 'diode_1n5819':
+      terminals = makeTerminals(id, [{ label: 'A+', x: 0, y: 62 }, { label: 'K-', x: 192, y: 62 }]);
+      state = { vf: 0.3, name: '1N5819' };
+      break;
     case 'diode':
       terminals = makeTerminals(id, [{ label: 'A+', x: 0, y: 62 }, { label: 'K-', x: 192, y: 62 }]);
       state = { vf: 0.7, name: '1N4007' };
@@ -2252,11 +2260,11 @@ function toggleGestureShortcutBar() {
 function triggerShortcutAction(action) {
   if (action === 'select_mode') {
     selectionModeActive = !selectionModeActive;
-    
+
     // Toggle active visual states on button
     const btn = document.getElementById('sh-btn-select');
     if (btn) btn.classList.toggle('active', selectionModeActive);
-    
+
     // Clear selections if disabling mode
     if (!selectionModeActive) {
       selectedComponents.forEach(id => {
@@ -2265,7 +2273,7 @@ function triggerShortcutAction(action) {
       });
       selectedComponents.clear();
     }
-    
+
     showToast(selectionModeActive ? 'Selection Tool ON' : 'Selection Tool OFF (Panning Active)', 'info');
   } else if (action === 'undo') {
     showToast('Undo', 'info');
@@ -2294,7 +2302,7 @@ function handleThreeFingerTouchEnd(e) {
   if (threeFingerStartPoints.length === 3) {
     const duration = Date.now() - threeFingerStartTime;
     const endPoints = Array.from(e.changedTouches || []).concat(Array.from(e.touches || []));
-    
+
     if (duration < 250) {
       // 1. Three-Finger Tap: Toggle floating shortcuts
       toggleGestureShortcutBar();
@@ -2995,7 +3003,7 @@ function simulationTick() {
       const out = document.getElementById(`${id}-out`); if (out) { out.innerText = state.out ? 'HIGH' : 'LOW'; out.style.color = state.out ? 'var(--teal)' : 'var(--rose)'; }
       const cv = document.getElementById(`${id}-cv`); if (cv) { const vThr = tv('THR'); cv.innerText = vThr.toFixed(1) + 'V'; }
     }
-    else if (type === 'diode' || type === 'zener') {
+    else if (type === 'diode' || type === 'zener' || type === 'diode_1n4148' || type === 'diode_1n5819') {
       const vA = tv('A+'), vK = tv('K-');
       const fwd = vA - vK > state.vf;
       const el = document.getElementById(`${id}-state`);
@@ -3141,23 +3149,23 @@ function handleWorkspaceWheel(e) {
 }
 
 function startWorkspacePan(e) {
-     // Lock out panning during active wire draws or card drags
-     if (draggedComponent || isDragging || activeWireStart) return;
-     const src = e.touches ? e.touches[0] : e;
-     
-     // Two-finger touch on mobile always handles panning and zooming
-     if (e.touches && e.touches.length === 2) {
-       isPanningWorkspace = true;
-       lastTouchDistance = getTouchDistance(e);
-       panStart.x = (e.touches[0].clientX + e.touches[1].clientX) / 2 - transformState.x;
-       panStart.y = (e.touches[0].clientY + e.touches[1].clientY) / 2 - transformState.y;
-       return;
-     }
+  // Lock out panning during active wire draws or card drags
+  if (draggedComponent || isDragging || activeWireStart) return;
+  const src = e.touches ? e.touches[0] : e;
 
-     isPanningWorkspace = true;
-     panStart.x = src.clientX - transformState.x;
-     panStart.y = src.clientY - transformState.y;
-   }
+  // Two-finger touch on mobile always handles panning and zooming
+  if (e.touches && e.touches.length === 2) {
+    isPanningWorkspace = true;
+    lastTouchDistance = getTouchDistance(e);
+    panStart.x = (e.touches[0].clientX + e.touches[1].clientX) / 2 - transformState.x;
+    panStart.y = (e.touches[0].clientY + e.touches[1].clientY) / 2 - transformState.y;
+    return;
+  }
+
+  isPanningWorkspace = true;
+  panStart.x = src.clientX - transformState.x;
+  panStart.y = src.clientY - transformState.y;
+}
 
 function handleWorkspacePanAndZoom(e) {
   if (!isPanningWorkspace) return;
@@ -3435,7 +3443,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Canvas Navigation Listeners (Zoom & Pan)
   workspace.addEventListener('wheel', handleWorkspaceWheel, { passive: false });
-  
+
   // Direct gesture event router (Left-clicks / touches)
   workspace.addEventListener('mousedown', e => {
     if (e.button === 0) {
@@ -3456,7 +3464,7 @@ window.addEventListener('DOMContentLoaded', () => {
       else startWorkspacePan(e); // Default: single-finger panning
     }
   }, { passive: false });
-     
+
   document.addEventListener('mousemove', e => {
     handleWorkspaceSelect(e);
     handleWorkspacePanAndZoom(e);
@@ -3465,7 +3473,7 @@ window.addEventListener('DOMContentLoaded', () => {
     handleWorkspaceSelect(e);
     handleWorkspacePanAndZoom(e);
   }, { passive: false });
-     
+
   document.addEventListener('mouseup', () => {
     endWorkspaceSelect();
     stopWorkspacePan();
@@ -3497,7 +3505,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('parts-search')?.addEventListener('input', e => filterParts(e.target.value));
 
   document.getElementById('btn-wires')?.addEventListener('click', openWireManager);
-  
+
   // Programmatically generate and inject the iOS-like Floating Gesture Menu
   const shortcutBar = document.createElement('div');
   shortcutBar.id = 'gesture-shortcut-bar';
