@@ -3457,7 +3457,8 @@ window.addEventListener('DOMContentLoaded', () => {
   // Direct gesture event router (Left-clicks / touches)
   workspace.addEventListener('mousedown', e => {
     if (e.button === 0) {
-      if (selectionModeActive) {
+      // Shift + Left Click OR toggled selection mode button triggers selection box on desktop
+      if (e.shiftKey || selectionModeActive) {
         startWorkspaceSelect(e);
       } else {
         startWorkspacePan(e);
