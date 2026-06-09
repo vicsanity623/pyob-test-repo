@@ -124,6 +124,9 @@ const PARTS_CATALOGUE = [
       { type: 'led_white', icon: '🤍', iconClass: 'icon-active', name: 'LED White 5mm', desc: 'Vf 3.3V, If 20mA' },
       { type: 'npn_bc547', icon: '📉', iconClass: 'icon-active', name: 'NPN BC547', desc: 'Small signal BJT' },
       { type: 'pnp_bc557', icon: '📈', iconClass: 'icon-active', name: 'PNP BC557', desc: 'Small signal BJT' },
+      { type: 'npn_2n3904', icon: '📉', iconClass: 'icon-active', name: 'NPN 2N3904', desc: 'Workbench general-purpose NPN BJT' },
+      { type: 'pnp_2n3906', icon: '📈', iconClass: 'icon-active', name: 'PNP 2N3906', desc: 'Workbench general-purpose PNP BJT' },
+      { type: 'pnp_bc557', icon: '📈', iconClass: 'icon-active', name: 'PNP BC557', desc: 'Small signal BJT' },
       { type: 'mosfet_2n7000', icon: '🧱', iconClass: 'icon-active', name: 'N-ch 2N7000', desc: 'Small signal MOSFET' },
       { type: 'led', icon: '💡', iconClass: 'icon-active', name: 'LED Red 5mm', desc: 'Vf 2.0V, If 20mA max 45mA' },
       { type: 'led_green', icon: '💚', iconClass: 'icon-active', name: 'LED Green 5mm', desc: 'Vf 2.2V, If 20mA, λ 525nm' },
@@ -330,6 +333,14 @@ function buildComponent(type, id, existingComponents) {
     case 'led_rgb':
       terminals = makeTerminals(id, [{ label: 'R+', x: 20, y: 105 }, { label: 'G+', x: 60, y: 105 }, { label: 'B+', x: 100, y: 105 }, { label: 'K-', x: 140, y: 105 }]);
       state = { blownR: false, blownG: false, blownB: false, name: 'RGB LED' };
+      break;
+    case 'npn_2n3904':
+      terminals = makeTerminals(id, [{ label: 'C', x: 96, y: 0 }, { label: 'B', x: 0, y: 82 }, { label: 'E', x: 192, y: 82 }]);
+      state = { current_b: 0.0, beta: 200, name: '2N3904 NPN', vbe_on: 0.7 };
+      break;
+    case 'pnp_2n3906':
+      terminals = makeTerminals(id, [{ label: 'C', x: 96, y: 0 }, { label: 'B', x: 0, y: 82 }, { label: 'E', x: 192, y: 82 }]);
+      state = { current_b: 0.0, beta: 200, name: '2N3906 PNP', vbe_on: 0.7 };
       break;
     case 'npn_transistor':
       terminals = makeTerminals(id, [{ label: 'C', x: 96, y: 0 }, { label: 'B', x: 0, y: 82 }, { label: 'E', x: 192, y: 82 }]);
@@ -561,7 +572,8 @@ function buildCardBody(comp) {
          </div>`;
     case 'npn_bc547': case 'pnp_bc557':
     case 'npn_transistor': case 'pnp_transistor':
-      const polarity = comp.type === 'npn_transistor' ? 'NPN' : 'PNP';
+    case 'npn_2n3904': case 'pnp_2n3906':
+      const polarity = (comp.type.startsWith('npn')) ? 'NPN' : 'PNP';
       return `<div class="flex flex-col gap-1.5 items-center">
            <div class="font-mono" style="font-size:9px;color:var(--text-secondary)">${comp.state.name} – ${polarity} BJT</div>
            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%">
@@ -2691,7 +2703,7 @@ function simulationTick() {
           const R = state.pressed ? 0.01 : 1e8; const G = 1 / R; const nb = (n1 === i) ? n2 : n1;
           if (n1 === i || n2 === i) { sumG += G; sumGV += G * V[nb]; }
         }
-        else if (type === 'npn_transistor' || type === 'npn_bc547') {
+        else if (type === 'npn_transistor' || type === 'npn_bc547' || type === 'npn_2n3904') {
           const nC = T('C'), nB = T('B'), nE = T('E'); if (nC === undefined || nB === undefined || nE === undefined) return;
           // B-E junction
           const vbe = V[nB] - V[nE], active = vbe > 0.7;
@@ -2699,7 +2711,7 @@ function simulationTick() {
           // C-E channel
           if (nC === i || nE === i) { const Ib = Math.max(0, (vbe - 0.7) / 50); state.current_b = Ib; const Rce = Math.max(2, 1 / (state.beta * Ib + 1e-9)); const G = 1 / Rce; const nb = (nC === i) ? nE : nC; sumG += G; sumGV += G * V[nb]; }
         }
-        else if (type === 'pnp_transistor' || type === 'pnp_bc557') {
+        else if (type === 'pnp_transistor' || type === 'pnp_bc557' || type === 'pnp_2n3906') {
           const nC = T('C'), nB = T('B'), nE = T('E'); if (nC === undefined || nB === undefined || nE === undefined) return;
           const veb = V[nE] - V[nB], active = veb > 0.7;
           if (nE === i || nB === i) { const G = active ? 1 / 50 : 1 / 1e7; const nb = (nE === i) ? nB : nE; const Veff = (nE === i) ? (V[nB] + 0.7) : (V[nE] - 0.7); sumG += G; sumGV += G * (active ? Veff : V[nb]); }
@@ -2942,7 +2954,7 @@ function simulationTick() {
       if (oscData[id].ch1.length > 200) { oscData[id].ch1.shift(); oscData[id].ch2.shift(); }
       drawScope(id);
     }
-    else if (type === 'npn_transistor' || type === 'pnp_transistor') {
+    else if (type === 'npn_transistor' || type === 'pnp_transistor' || type === 'npn_bc547' || type === 'pnp_bc557' || type === 'npn_2n3904' || type === 'pnp_2n3906') {
       const vB = tv('B'), vC = tv('C'), vE = tv('E');
       const vbe = type === 'npn_transistor' ? (vB - vE) : (vE - vB);
       const vce = vC - vE;
