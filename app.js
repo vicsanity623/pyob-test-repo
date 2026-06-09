@@ -2971,6 +2971,19 @@ function evaluateActiveTutorial(nodeMap) {
   }
 }
 
+// High-performance DOM helper to prevent layout thrashing
+function safeSetText(id, text, color) {
+  const el = document.getElementById(id);
+  if (el) {
+    if (el.textContent !== text) {
+      el.textContent = text;
+    }
+    if (color && el.style.color !== color) {
+      el.style.color = color;
+    }
+  }
+}
+
 // ─── SIMULATION SOLVER ────────────────────────────────────────────────────────
 function simulationTick() {
   if (!simulationRunning) return;
@@ -3018,7 +3031,7 @@ function simulationTick() {
   if (lastVoltages && lastVoltages.length === nodeCount) V.forEach((_, i) => { V[i] = lastVoltages[i]; });
   V[gndIdx] = 0.0;
 
-  // Iterative nodal analysis (Gauss-Seidel)
+  // Iterative nodal analysis (Gauss-Seidel) with early convergence exit optimization
   for (let iter = 0; iter < 200; iter++) {
     const nV = [...V];
     for (let i = 0; i < nodeCount; i++) {
