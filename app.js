@@ -1042,6 +1042,12 @@ function updateToneGenerator(id, field, val) {
   const comp = components.find(c => c.id === id);
   if (!comp) return;
   comp.state[field] = parseFloat(val) || 1.0;
+  
+  // Real-time UI updates
+  if (field === 'frequency') {
+    safeSetText(`${id}-display`, comp.state.frequency.toFixed(1) + ' Hz');
+  }
+  
   saveWorkspaceToLocalStorage();
 }
 
@@ -3090,14 +3096,17 @@ function simulationTick() {
           twoPort(T('+'), T('-'), cellV, Rint);
         }
         else if (type === 'tone_generator') {
-          const disp = document.getElementById(`${id}-display`);
-          if (disp) disp.textContent = state.frequency.toFixed(1) + ' Hz';
-          const slide = document.getElementById(`${id}-freq-slide`);
-          if (slide) slide.value = state.frequency;
-          const text = document.getElementById(`${id}-freq-text`);
-          if (text) text.value = state.frequency;
-          const amp = document.getElementById(`${id}-amp-text`);
-          if (amp) amp.value = state.amplitude;
+          const termA = terminals[0]?.id;
+          const termB = terminals[1]?.id;
+          const isConnected = wires.some(w => w.from === termA || w.to === termA) &&
+                              wires.some(w => w.from === termB || w.to === termB);
+          
+          if (isConnected) {
+            twoPort(T('+'), T('-'), state.outputVoltage, 50);
+          } else {
+            // Ground floating terminals to prevent calculation fluctuations
+            twoPort(T('+'), T('-'), 0.0, 1e8);
+          }
         }
         else if (type === 'custom_load') {
           if (state.blown) return;
@@ -3328,6 +3337,19 @@ function simulationTick() {
 
     if (type === 'signal_generator') {
       const el = document.getElementById(`${id}-disp`); if (el) el.innerText = state.outputVoltage.toFixed(2) + ' V';
+    }
+    else if (type === 'tone_generator') {
+      safeSetText(`${id}-display`, state.frequency.toFixed(1) + ' Hz');
+      
+      // Update inputs dynamically without interrupting active typing/focus states
+      const slide = document.getElementById(`${id}-freq-slide`);
+      if (slide && document.activeElement !== slide) slide.value = state.frequency;
+      
+      const text = document.getElementById(`${id}-freq-text`);
+      if (text && document.activeElement !== text) text.value = state.frequency;
+      
+      const amp = document.getElementById(`${id}-amp-text`);
+      if (amp && document.activeElement !== amp) amp.value = state.amplitude;
     }
     else if (type === 'capacitor' || type === 'cap_100n' || type === 'cap_10u' || type === 'cap_1u' || type === 'cap_100u' || type === 'cap_22p' || type === 'cap_100p' || type === 'cap_4n7' || type === 'cap_0u47' || type === 'cap_470p' || type === 'cap_2n2' || type === 'cap_33n') {
       const vp = tv('+'), vn = tv('-');
