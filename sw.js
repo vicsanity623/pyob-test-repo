@@ -34,27 +34,36 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Audio files — cache-first with Range support
+  // 1. Audio: Cache-First (keep as is, these are large)
   if (isAudioRequest(event.request)) {
     event.respondWith(handleAudio(event.request));
     return;
   }
 
-  // library.json — network-first (always fresh)
-  if (url.pathname.endsWith('library.json')) {
-    event.respondWith(networkFirst(event.request));
-    return;
-  }
-
-  // Static app shell — cache-first
-  if (isStaticAsset(url)) {
-    event.respondWith(cacheFirst(event.request));
-    return;
-  }
-
-  // Default — network with cache fallback
+  // 2. Everything else (HTML, JS, CSS, JSON): Network-First
+  // This ensures it checks the source before launching.
   event.respondWith(networkFirst(event.request));
 });
+
+async function networkFirst(request) {
+  try {
+    // Try network first
+    const response = await fetch(request);
+    
+    // If successful, update the cache and return
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+      return response;
+    }
+    return response;
+  } catch (err) {
+    // If network fails (offline), check cache
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    return new Response('Offline and no cache available', { status: 503 });
+  }
+}
 
 // ── Strategies ────────────────────────────────────────────────
 async function cacheFirst(request) {
