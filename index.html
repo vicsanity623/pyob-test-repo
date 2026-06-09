@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VicsBoard v0.1.0.1</title>
+    <title>VicsBoard v0.1.0.2</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#080c18">
-    
+
     <!-- Link Manifest -->
     <link rel="manifest" href="manifest.json">
-    
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -23,7 +23,7 @@
         <div class="header-brand">
             <div class="brand-icon-wrap">⚡</div>
             <div>
-                <h1 class="brand-title">        <em>v0.1.0.1</em></h1>
+                <h1 class="brand-title"> <em>v0.1.0.2</em></h1>
                 <p class="brand-sub">Simulation Playground</p>
             </div>
         </div>
@@ -104,10 +104,13 @@
                 <span class="sidebar-title">Tutorial Guide</span>
                 <select id="tutorial-select" onchange="switchTutorial(this.value)" class="tut-select">
                     <option value="lead_acid">1. DIY 4.0V Epsom-Salt Battery</option>
-                    <option value="solar_charge">2. Solar Charging Regulator</option>
+                    <option value="solar_charge">2. 12V Solar Charging Regulator</option>
                     <option value="class_a_amp">3. Class-A BJT Amplifier</option>
-                    <option value="voltage_reg">4. LM7805 5V Regulator</option>
-                    <option value="led_blink">5. NE555 LED Blinker</option>
+                    <option value="voltage_divider">4. Voltage Divider + LED</option>
+                    <option value="voltage_reg">5. LM7805 5V Regulator</option>
+                    <option value="led_blink">6. NE555 LED Blinker</option>
+                    <option value="spectrum_analyzer">7. 3-Band Transistor Spectrum Analyzer</option>
+                    <option value="custom">8. Custom Sandbox (Free Play)</option>
                 </select>
             </div>
             <div class="sidebar-body">
@@ -160,7 +163,7 @@
                 navigator.serviceWorker.register('sw.js')
                     .then(reg => {
                         console.log('[SW] Registered successfully in scope:', reg.scope);
-                        
+
                         // Check for source code updates on load and refresh browser automatically on update detection
                         reg.onupdatefound = () => {
                             const installingWorker = reg.installing;
