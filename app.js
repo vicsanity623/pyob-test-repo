@@ -911,8 +911,18 @@ function renderComponent(comp) {
     });
   }
 
+  // Prevent sliding, typing, and button clicks from bubbling up and triggering workspace panning
+  div.querySelectorAll('input, select, button').forEach(el => {
+    const stop = e => e.stopPropagation();
+    el.addEventListener('mousedown', stop);
+    el.addEventListener('touchstart', stop);
+    el.addEventListener('mousemove', stop);
+    el.addEventListener('touchmove', stop);
+  });
+  
   updateResistorBandsForComp(comp);
 }
+
 
 // ─── COMPONENT-SPECIFIC UPDATE HELPERS ────────────────────────────────────────
 function formatResistance(r) {
@@ -1616,15 +1626,16 @@ function toggleSidebar(panelId) {
 }
 
 // ─── TUTORIAL GUIDE ───────────────────────────────────────────────────────────
+// ─── TUTORIAL GUIDE ───────────────────────────────────────────────────────────
 const tutorialGuides = {
   lead_acid: {
-    title: "DIY 4.0V Epsom-Salt Battery",
+    title: "1. DIY 4.0V Epsom-Salt Battery",
     steps: [
       { id: 'step-1', title: "Step 1: Placement", desc: "Place 1× USB Power Supply and 2× DIY Epsom-Salt Cells onto the workspace." },
-      { id: 'step-2', title: "Step 2: Series Connection", desc: "Connect Cell 1 (+) to Cell 2 (−) to build a 2-cell series battery." },
-      { id: 'step-3', title: "Step 3: Protection Resistor", desc: "Add a Resistor and set it to 81Ω to limit forming current." },
-      { id: 'step-4', title: "Step 4: Forming Charge", desc: "Connect USB 5V → Resistor A, Resistor B → Cell 2 (+), USB GND → Cell 1 (−). Wait for 100% forming." },
-      { id: 'step-5', title: "Step 5: Load Test", desc: "Disconnect charger. Set Resistor to 330Ω, add LED. Connect Cell 2 (+) → Resistor A → LED (+) → LED (−) → Cell 1 (−)." },
+      { id: 'step-2', title: "Step 2: Series Connection", desc: "Connect the Positive terminal (+) of Cell 1 to the Negative terminal (−) of Cell 2 with a blue wire to build a 2-cell series battery." },
+      { id: 'step-3', title: "Step 3: Protection Resistor", desc: "Place a Resistor on the board and set its value to 81Ω to limit the active forming charge current." },
+      { id: 'step-4', title: "Step 4: Forming Charge", desc: "Connect USB 5V (+) to Resistor Terminal A with a red wire, then Resistor Terminal B to Cell 2 (+). Connect USB GND (−) to Cell 1 (−) with a blue wire. Turn on the simulation and wait for forming to reach 100%." },
+      { id: 'step-5', title: "Step 5: Load Test", desc: "Disconnect the charger wires. Set the Resistor to 330Ω and add a Red LED. Connect Cell 2 (+) to Resistor Terminal A, Resistor Terminal B to LED Anode (+), and LED Cathode (−) back to Cell 1 (−)." },
     ],
     liveMetrics: () => {
       const cells = components.filter(c => c.type === 'diy_cell');
@@ -1640,12 +1651,12 @@ const tutorialGuides = {
     }
   },
   solar_charge: {
-    title: "12V Solar Charging Regulator",
+    title: "2. 12V Solar Charging Regulator",
     steps: [
-      { id: 'step-1', title: "Step 1: Place Components", desc: "Add 1× 12V Solar Panel, 1× Capacitor, 1× SPST Switch." },
-      { id: 'step-2', title: "Step 2: Wire Circuit", desc: "Solar (+) → Switch In, Switch Out → Cap (+), Solar (−) → Cap (−)." },
-      { id: 'step-3', title: "Step 3: Max Sunlight", desc: "Drag the Sunlight slider to 100% → 12.0V output." },
-      { id: 'step-4', title: "Step 4: Close Switch", desc: "Tap the SPST switch ON. Watch capacitor charge to 12V." },
+      { id: 'step-1', title: "Step 1: Place Components", desc: "Add 1× 12V Solar Panel, 1× 1000µF Capacitor, and 1× SPST Switch onto the workspace." },
+      { id: 'step-2', title: "Step 2: Wire Circuit", desc: "Connect Solar Panel (+) to Switch 'In' terminal with an orange wire, Switch 'Out' terminal to Capacitor (+) with an orange wire, and Solar Panel (−) directly to Capacitor (−) with a blue wire." },
+      { id: 'step-3', title: "Step 3: Max Sunlight", desc: "Select the Solar Panel and drag its Sunlight slider up to 100% to output a steady 12.0V." },
+      { id: 'step-4', title: "Step 4: Close Switch", desc: "Tap the SPST switch ON (Closed). Watch the capacitor charge up to 12V." },
     ],
     liveMetrics: () => {
       const caps = components.filter(c => ['capacitor', 'cap_100n', 'cap_10u', 'cap_0u47', 'cap_2n2', 'cap_33n'].includes(c.type));
@@ -1659,16 +1670,16 @@ const tutorialGuides = {
     }
   },
   class_a_amp: {
-    title: "Class-A BJT Amplifier",
+    title: "3. Class-A BJT Amplifier",
     steps: [
-      { id: 'step-1', title: "Step 1: Place Parts", desc: "Add Signal Generator, NPN Transistor, 2× Resistors, Multimeter." },
-      { id: 'step-2', title: "Step 2: Pull-Up Network", desc: "USB 5V → R1-A, R1-B → Transistor C. Emitter (E) → USB GND." },
-      { id: 'step-3', title: "Step 3: Signal Input", desc: "Signal Gen (+) → Base (B). Signal Gen (−) → USB GND." },
-      { id: 'step-4', title: "Step 4: Measure Output", desc: "DMM Red → Collector (C). DMM Black → GND. Set DMM to V." },
-      { id: 'step-5', title: "Step 5: Observe Gain", desc: "Set R1 to 1kΩ. Collector swings inverse to Base — signal inversion!" },
+      { id: 'step-1', title: "Step 1: Place Parts", desc: "Add 1× USB 5V, 1× Signal Generator, 1× NPN Transistor (C1815), 1× 1kΩ Resistor, and 1× Multimeter." },
+      { id: 'step-2', title: "Step 2: Pull-Up Network", desc: "Connect USB 5V (+) to Resistor Terminal A, Resistor Terminal B to Transistor Collector (C), and Transistor Emitter (E) directly to USB GND (−) using a blue wire." },
+      { id: 'step-3', title: "Step 3: Signal Input", desc: "Connect Signal Generator (+) to Transistor Base (B) with an orange wire, and Signal Generator (−) to USB GND (−) with a blue wire." },
+      { id: 'step-4', title: "Step 4: Measure Output", desc: "Connect Multimeter Red (VΩ+) to Transistor Collector (C), and Multimeter Black (COM-) to USB GND (−). Set the Multimeter to Voltage (V) mode." },
+      { id: 'step-5', title: "Step 5: Observe Gain", desc: "Set R1 to 1kΩ. Turn simulation ON and observe the output voltage at the Collector swinging inversely to the input signal — classic signal inversion!" },
     ],
     liveMetrics: () => {
-      const npn = components.find(c => c.type === 'npn_transistor' || c.type === 'npn_bc547' || c.type === 'npn_2n3904' || c.type === 'npn_c2001' || c.type === 'npn_c1815');
+      const npn = components.find(c => ['npn_transistor', 'npn_bc547', 'npn_2n3904', 'npn_c2001', 'npn_c1815'].includes(c.type));
       const gen = components.find(c => c.type === 'signal_generator');
       let html = '';
       if (gen) html += `<div class="metric-row"><span>Signal In</span><span class="metric-val" style="color:var(--purple)">${(gen.state.outputVoltage || 0).toFixed(2)} V</span></div>`;
@@ -1685,12 +1696,12 @@ const tutorialGuides = {
     }
   },
   voltage_divider: {
-    title: "Voltage Divider + LED",
+    title: "4. Voltage Divider + LED",
     steps: [
-      { id: 'step-1', title: "Step 1: Place Parts", desc: "Add USB 5V Supply, 2× Resistors, 1× LED Red." },
-      { id: 'step-2', title: "Step 2: Divider", desc: "USB 5V → R1-A, R1-B → R2-A, R2-B → GND." },
-      { id: 'step-3', title: "Step 3: Set Values", desc: "Set R1=220Ω. The midpoint (R1-B/R2-A) ≈ 2.5V." },
-      { id: 'step-4', title: "Step 4: Light the LED", desc: "R1-B → LED Anode (+), LED Cathode (−) → R2-A." },
+      { id: 'step-1', title: "Step 1: Place Parts", desc: "Add 1× USB 5V, 2× Resistors (R1 and R2), and 1× Red LED onto the workspace." },
+      { id: 'step-2', title: "Step 2: Divider", desc: "Connect USB 5V (+) to R1-A, R1-B to R2-A, and R2-B to USB GND (−) to form a series voltage divider path." },
+      { id: 'step-3', title: "Step 3: Set Values", desc: "Set R1 to 220Ω, and set R2 to 220Ω. The midpoint voltage (R1-B/R2-A junction) will divide the 5V rail exactly down to 2.50V." },
+      { id: 'step-4', title: "Step 4: Light the LED", desc: "Connect R1-B to LED Anode (+), and LED Cathode (−) to R2-A. The LED will illuminate under a controlled current." },
     ],
     liveMetrics: () => {
       const rs = components.filter(c => c.type.startsWith('resistor'));
@@ -1702,12 +1713,12 @@ const tutorialGuides = {
     }
   },
   voltage_reg: {
-    title: "LM7805 5V Regulator",
+    title: "5. LM7805 5V Regulator",
     steps: [
-      { id: 'step-1', title: "Step 1: Place Parts", desc: "Place an LM7805 Voltage Regulator, a 12V Bench PSU, and a Solder Joint (Common GND)." },
-      { id: 'step-2', title: "Step 2: Input Power", desc: "Connect PSU (+) to LM7805 IN, and PSU (GND) to your Solder Joint." },
-      { id: 'step-3', title: "Step 3: Ground LM7805", desc: "Connect the LM7805 GND terminal to your Solder Joint (Common GND)." },
-      { id: 'step-4', title: "Step 4: Measure", desc: "Connect a Multimeter (V mode): VΩ+ to LM7805 OUT, and COM- to your Solder Joint. Observe a steady 5.00V output!" }
+      { id: 'step-1', title: "Step 1: Place Parts", desc: "Place 1× 12V Bench PSU, 1× LM7805 Regulator, 1× Solder Joint (Common GND), and 1× Multimeter." },
+      { id: 'step-2', title: "Step 2: Input Power", desc: "Connect Bench PSU (+) to LM7805 IN terminal with a red wire, and Bench PSU (GND) to your Solder Joint with a blue wire." },
+      { id: 'step-3', title: "Step 3: Ground LM7805", desc: "Connect the LM7805 GND terminal directly to your Solder Joint (Common GND) with a blue wire." },
+      { id: 'step-4', title: "Step 4: Measure", desc: "Connect Multimeter Red (VΩ+) to LM7805 OUT terminal, and Multimeter Black (COM-) to your Solder Joint. Turn PSU on to observe a steady 5.00V output!" }
     ],
     liveMetrics: () => {
       const reg = components.find(c => c.type === 'lm7805');
@@ -1722,11 +1733,11 @@ const tutorialGuides = {
     }
   },
   led_blink: {
-    title: "NE555 LED Blinker",
+    title: "6. NE555 LED Blinker",
     steps: [
-      { id: 'step-1', title: "Step 1: Core Parts", desc: "Place an NE555 Timer, 10µF Capacitor, 2× resistors, and an LED." },
-      { id: 'step-2', title: "Step 2: Astable Wiring", desc: "Wire the NE555 in astable oscillation configuration (Trigger to Threshold, discharge resistors in series)." },
-      { id: 'step-3', title: "Step 3: Output Load", desc: "Connect NE555 OUT to LED Anode (+), and LED Cathode (−) through a resistor to GND. Observe the LED pulse!" }
+      { id: 'step-1', title: "Step 1: Core Parts", desc: "Place 1× USB 5V, 1× NE555 Timer, 1× 10µF Capacitor, 2× Resistors (R1 and R2), and 1× Red LED." },
+      { id: 'step-2', title: "Step 2: Astable Wiring", desc: "Connect NE555 Trigger (TRG) directly to Threshold (THR). Connect Vcc to USB 5V (+) and GND to USB GND (−). Wire charging resistors in series to the threshold pin." },
+      { id: 'step-3', title: "Step 3: Output Load", desc: "Connect NE555 OUT to LED Anode (+), and LED Cathode (−) through a resistor to USB GND (−). Watch the LED pulse!" }
     ],
     liveMetrics: () => {
       const timer = components.find(c => c.type === 'ne555');
@@ -1739,14 +1750,14 @@ const tutorialGuides = {
     }
   },
   spectrum_analyzer: {
-    title: "3-Band Spectrum Analyzer",
+    title: "7. 3-Band Spectrum Analyzer",
     steps: [
-      { id: 'step-1', title: "Step 1: Frame Rails", desc: "Place a 12V Bench PSU, a Tone Generator, and three Solder Joints (Common ground and audio rails)." },
-      { id: 'step-2', title: "Step 2: Pre-Amplifier", desc: "Place an NPN transistor (C1815), 10kΩ and 33kΩ Resistors, and a 10µF Capacitor. Wire Tone Gen (+) → Capacitor → Base (B). Bias the base with resistors." },
-      { id: 'step-3', title: "Step 3: Bass Channel", desc: "Form a Low-Pass Filter (LPF) using a 33nF Capacitor and 10kΩ Resistor. Wire to the preamp output, then route to a C1815 to drive the Bass column." },
-      { id: 'step-4', title: "Step 4: Mid Channel", desc: "Build a Band-Pass Filter (BPF) using 4.7nF and 2.2nF Capacitors with a 4.7kΩ Resistor. Route to a C1815 to drive the Mids column." },
-      { id: 'step-5', title: "Step 5: Treble Channel", desc: "Create a High-Pass Filter (HPF) using a 470pF Capacitor and 1kΩ Resistor. Route to a C1815 to drive the Treble column." },
-      { id: 'step-6', title: "Step 6: Output Array", desc: "Connect three parallel columns of LEDs (incorporating series 1N4148 Diodes and 820Ω Resistors) to the collectors of your LPF, BPF, and HPF driver transistors." },
+      { id: 'step-1', title: "Step 1: Frame Rails", desc: "Place a 12V Bench PSU, a Tone Generator, and three Solder Joints (Label them: Common Ground, Preamp Output, and VCC Rail). Connect Bench PSU (GND) to the Ground Solder Joint, and Bench PSU (+) to the VCC Rail Joint." },
+      { id: 'step-2', title: "Step 2: Pre-Amplifier", desc: "Place a C1815 NPN Transistor, 10kΩ and 33kΩ Resistors, and a 10µF Capacitor. Wire Tone Generator (+) to Capacitor (+) terminal, Capacitor (−) to Transistor Base (B). Connect a 33kΩ resistor from Base to VCC, and a 10kΩ resistor from Base to GND." },
+      { id: 'step-3', title: "Step 3: Bass Channel", desc: "Form a Low-Pass Filter (LPF) using a 33nF Capacitor and 10kΩ Resistor. Wire the capacitor from your preamp Collector to a new C1815 driver Base (B), and pull down with the resistor to GND. Connect the LED column's Cathode (−) to this driver's Collector (C)." },
+      { id: 'step-4', title: "Step 4: Mid Channel", desc: "Build a Band-Pass Filter (BPF) using 4.7nF and 2.2nF Capacitors with a 4.7kΩ Resistor. Wire the capacitors in series to isolate mids, route to a C1815 driver Base (B), and connect its Collector (C) to the Mid LED column Cathode (−)." },
+      { id: 'step-5', title: "Step 5: Treble Channel", desc: "Create a High-Pass Filter (HPF) using a 470pF Capacitor and 1kΩ Resistor. Wire the capacitor from the preamp Collector to the Base (B) of a C1815 driver, pull down with the resistor to GND, and connect its Collector (C) to the Treble LED column Cathode (−)." },
+      { id: 'step-6', title: "Step 6: Output Array", desc: "Connect the Anodes (A+) of all three LED columns to your +12V VCC Rail. Connect all three driver Emitter (E) terminals directly to your Common Ground Solder Joint." },
       { id: 'step-7', title: "Step 7: Audio Test", desc: "Switch the circuit ON. Vary the Tone Generator frequency: Lows (20-150Hz) trigger Bass; Mids (400-2kHz) trigger Midrange; Highs (4k-15kHz) trigger Treble!" }
     ],
     liveMetrics: () => {
@@ -1754,7 +1765,7 @@ const tutorialGuides = {
       const gen = components.find(c => c.type === 'tone_generator');
       const psuV = psu ? psu.state.voltage || 0.0 : 0.0;
       const genF = gen ? gen.state.frequency || 0.0 : 0.0;
-
+      
       let bandText = "OFFLINE";
       if (genF > 0) {
         if (genF >= 20 && genF <= 250) bandText = "BASS ACTIVE (LPF Channel)";
@@ -1771,7 +1782,7 @@ const tutorialGuides = {
     }
   },
   custom: {
-    title: "Custom Sandbox (Free Play)",
+    title: "8. Custom Sandbox (Free Play)",
     steps: [
       { id: 'step-1', title: "Sandbox Active", desc: "Build any circuit you like! Active connections and loops will print out live analytics down below." }
     ],
