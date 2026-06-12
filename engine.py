@@ -19,25 +19,49 @@ MEDIA_FOLDER    = "media"
 MAX_FILE_BYTES  = 100 * 1024 * 1024   # 100 MB cap per file
 REPO_WARN_BYTES = 950 * 1024 * 1024   # Zip folder when near 950 MB
 ZIP_PREFIX      = "media_archive"
-MIN_VIDEO_BYTES = 40 * 1024            # Reject stubs / corrupt files < 40 KB
+MIN_VIDEO_BYTES = 40 * 1024            # Reject corrupt files < 40 KB
+MIN_SCORE       = 10                   # Minimum upvotes for validation
 
 os.makedirs(MEDIA_FOLDER, exist_ok=True)
 
-# Sourcing targets from open networks
-LEMMY_INSTANCES = ["https://lemmy.world", "https://sh.itjust.works"]
+# Reddit targets via a robust pool of Redlib instances
+REDDIT_SUBS = [
+    "UFOs", "UAP", "Aliens", "UFObelievers", "UFOdocumentaries",
+    "UFOscience", "Mufon", "Experiencers", "TheUAPReport", "Skies_Above",
+    "ufo", "NHI", "DisclosureFiles", "Paranormal", "conspiracy",
+    "StrangeEarth", "UnexplainedPhenomena"
+]
+
+REDLIB_INSTANCES = [
+    "https://safereddit.com",
+    "https://redlib.kittycat.homes",
+    "https://redlib.vny.su",
+    "https://redlib.ducks.party",
+    "https://redlib.tux.im",
+    "https://redlib.catsarch.com"
+]
+
+# Lemmy primary instances (Using high-capacity nodes to prevent 404s)
+LEMMY_INSTANCES = ["https://lemmy.world", "https://lemmy.ml"]
 LEMMY_COMMUNITIES = ["ufos", "aliens", "uap", "strangeearth", "paranormal", "conspiracy"]
+
+# 4chan configuration
 FOURCHAN_BOARD = "x"
+
+SEARCH_POOL = [
+    "ufo sighting video", "uap footage", "unidentified aerial",
+    "tic tac ufo", "triangle craft", "orb sighting video"
+]
 
 POSITIVE_KEYWORDS = [
     "ufo", "uap", "orb", "saucer", "tic tac", "tic-tac", "triangle",
     "sighting", "craft", "phenomenon", "footage", "video", "nhi",
-    "unidentified", "aerial", "anomalous", "encounter",
-    "unknown object", "lights in the sky", "hovering"
+    "unidentified", "aerial", "anomalous", "encounter", "lights in the sky"
 ]
 NEGATIVE_KEYWORDS = [
     "furry", "meme", "cgi", "vfx", "blender", "movie", "game", "art",
     "drawing", "tattoo", "fiction", "joke", "animation", "render",
-    "skyrim", "minecraft", "parody", "satire", "deepfake", "photoshop"
+    "satire", "deepfake", "photoshop", "minecraft"
 ]
 
 HEADERS = {
@@ -126,10 +150,10 @@ def merge_reddit_video(video_url: str, audio_url: str, final_path: str) -> bool:
     return ok
 
 # ─────────────────────────────────────────────────────────────────────────────
-# OPEN DATA SCRAPING (Lemmy & 4chan)
+# OPEN DATA SCRAPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _passes_filter(title: str, body: str) -> bool:
+def _passes_filter(title: str, body: str, score: int = MIN_SCORE) -> bool:
     combined = (title + " " + body).lower()
     if not any(kw in combined for kw in POSITIVE_KEYWORDS):
         return False
@@ -138,129 +162,259 @@ def _passes_filter(title: str, body: str) -> bool:
     return True
 
 
-def fetch_lemmy_sources() -> List[Dict]:
+def _extract_reddit_videos(data: dict, label: str) -> List[Dict]:
     results = []
-    # Pick a random instance from the list to spread load
-    base_instance = random.choice(LEMMY_INSTANCES)
-    
-    for community in LEMMY_COMMUNITIES:
-        print(f"  📡 Lemmy c/{community} via {base_instance}")
-        try:
-            url = f"{base_instance}/api/v3/post/list?community_name={community}&sort=New&limit=25"
-            r = requests.get(url, headers=HEADERS, timeout=15)
-            if r.status_code != 200:
-                print(f"     skip: HTTP {r.status_code}")
+    for post in data.get("data", {}).get("children", []):
+        p = post.get("data", {})
+        title = p.get("title", "")
+        body  = p.get("selftext", "")
+        score = p.get("score", 0)
+
+        if not _passes_filter(title, body, score):
+            continue
+
+        # Reddit native video
+        if p.get("is_video") and p.get("media", {}).get("reddit_video"):
+            rv = p["media"]["reddit_video"]
+            raw_url   = rv.get("fallback_url", "").split("?")[0]
+            audio_url = _reddit_audio_url(raw_url)
+            thumb_url = p.get("thumbnail", "")
+
+            if not raw_url:
                 continue
-                
-            data = r.json()
-            posts = data.get("posts", [])
-            for item in posts:
-                post_data = item.get("post", {})
-                title = post_data.get("name", "")
-                body = post_data.get("body", "")
-                media_url = post_data.get("url", "")
-                
-                if not media_url:
-                    continue
-                
-                # Check if it targets a video format
-                is_video = media_url.lower().endswith((".mp4", ".webm", ".mov", ".gifv")) or "v.redd.it" in media_url
-                if not is_video:
-                    continue
-                    
-                if not _passes_filter(title, body):
-                    continue
-                
-                creator_data = item.get("creator", {})
-                counts_data = item.get("counts", {})
-                score = counts_data.get("score", 0)
-                
-                audio_url = ""
-                platform = "lemmy_direct"
-                if "v.redd.it" in media_url:
-                    # Resolve native reddit video layouts if shared on Lemmy
-                    media_url = media_url.split("?")[0]
-                    if not media_url.endswith(".mp4"):
-                        media_url = f"{media_url}/DASH_720.mp4"
-                    audio_url = _reddit_audio_url(media_url)
-                    platform = "reddit_native"
+
+            results.append({
+                "source":    label,
+                "author":    p.get("author", "Anonymous"),
+                "title":     title,
+                "description": body,
+                "media_url": raw_url,
+                "thumbnail_url": thumb_url,
+                "media_type": "video",
+                "audio_url": audio_url,
+                "source_url": f"https://reddit.com{p['permalink']}",
+                "score":     score,
+                "platform":  "reddit_native"
+            })
+            continue
+
+        # Preview MP4 variant
+        preview = p.get("preview", {})
+        if preview.get("images"):
+            img = preview["images"][0]
+            if "variants" in img and "mp4" in img["variants"]:
+                mp4_url   = img["variants"]["mp4"]["source"]["url"]
+                res       = img.get("resolutions", [])
+                thumb_url = res[-1]["url"] if res else img["source"]["url"]
 
                 results.append({
-                    "source": f"Lemmy c/{community}",
-                    "author": creator_data.get("name", "Anonymous"),
-                    "title": title,
+                    "source":    label,
+                    "author":    p.get("author", "Anonymous"),
+                    "title":     title,
                     "description": body,
-                    "media_url": media_url,
-                    "thumbnail_url": post_data.get("thumbnail_url") or "",
+                    "media_url": mp4_url,
+                    "thumbnail_url": thumb_url,
                     "media_type": "video",
-                    "audio_url": audio_url,
-                    "source_url": post_data.get("ap_id") or f"{base_instance}/post/{post_data.get('id')}",
-                    "score": max(0, score),
-                    "platform": platform
+                    "audio_url": "",
+                    "source_url": f"https://reddit.com{p['permalink']}",
+                    "score":     score,
+                    "platform":  "reddit_preview"
                 })
-        except Exception as e:
-            print(f"     skip error: {e}")
-        time.sleep(random.uniform(1.0, 2.5))
+
+    return results
+
+
+def fetch_reddit_sources() -> List[Dict]:
+    """Scrapes Reddit threads utilizing a Redlib instance fallback chain."""
+    results = []
+    subs = REDDIT_SUBS.copy()
+    random.shuffle(subs)
+    
+    # Try 4 random subreddits per execution run
+    for sub in subs[:4]:
+        success = False
+        # Shuffle Redlib instance carousel to spread load
+        instances = REDLIB_INSTANCES.copy()
+        random.shuffle(instances)
         
+        for instance in instances:
+            sort = random.choice(["hot", "rising", "new"])
+            url = f"{instance}/r/{sub}/{sort}.json?limit=15"
+            try:
+                r = requests.get(url, headers=HEADERS, timeout=12)
+                if r.status_code == 200:
+                    data = r.json()
+                    extracted = _extract_reddit_videos(data, f"Reddit /r/{sub}")
+                    if extracted:
+                        results.extend(extracted)
+                        success = True
+                        break  # Stop checking other instances on success
+            except Exception:
+                continue  # Silent failover to next Redlib instance
+                
+        if not success:
+            print(f"  📡 Reddit /r/{sub} — Carousel failover active (All endpoints blocked)")
+            
+    return results
+
+
+def fetch_lemmy_sources() -> List[Dict]:
+    """Scrapes community directories with instance failovers on lemmy.world."""
+    results = []
+    
+    for community in LEMMY_COMMUNITIES:
+        # Prioritize high-capacity instances to resolve community feeds reliably
+        success = False
+        for instance in LEMMY_INSTANCES:
+            print(f"  📡 Lemmy c/{community} via {instance}")
+            try:
+                url = f"{instance}/api/v3/post/list?community_name={community}&sort=New&limit=25"
+                r = requests.get(url, headers=HEADERS, timeout=15)
+                if r.status_code == 404:
+                    continue  # Failover to secondary node if index returns 404
+                    
+                if r.status_code == 200:
+                    data = r.json()
+                    for item in data.get("posts", []):
+                        post_data = item.get("post", {})
+                        title = post_data.get("name", "")
+                        body = post_data.get("body", "")
+                        media_url = post_data.get("url", "")
+                        
+                        if not media_url:
+                            continue
+                        
+                        is_video = media_url.lower().endswith((".mp4", ".webm", ".mov", ".gifv")) or "v.redd.it" in media_url
+                        if not is_video:
+                            continue
+                            
+                        score = item.get("counts", {}).get("score", 0)
+                        if not _passes_filter(title, body, score):
+                            continue
+                        
+                        creator = item.get("creator", {})
+                        audio_url = ""
+                        platform = "lemmy_direct"
+                        
+                        if "v.redd.it" in media_url:
+                            media_url = media_url.split("?")[0]
+                            if not media_url.endswith(".mp4"):
+                                media_url = f"{media_url}/DASH_720.mp4"
+                            audio_url = _reddit_audio_url(media_url)
+                            platform = "reddit_native"
+
+                        results.append({
+                            "source": f"Lemmy c/{community}",
+                            "author": creator.get("name", "Anonymous"),
+                            "title": title,
+                            "description": body,
+                            "media_url": media_url,
+                            "thumbnail_url": post_data.get("thumbnail_url") or "",
+                            "media_type": "video",
+                            "audio_url": audio_url,
+                            "source_url": post_data.get("ap_id") or f"{instance}/post/{post_data.get('id')}",
+                            "score": max(0, score),
+                            "platform": platform
+                        })
+                    success = True
+                    break
+            except Exception as e:
+                print(f"     skip error: {e}")
+                
+        if not success:
+            print(f"     c/{community} failed to resolve across primary instances.")
+            
     return results
 
 
 def fetch_4chan_sources() -> List[Dict]:
-    print(f"  🍀 4chan /{FOURCHAN_BOARD}/")
+    """Scrapes 4chan /x/ catalog and scans replies inside matches to find videos."""
+    print(f"  🍀 4chan /{FOURCHAN_BOARD}/ Deep-Thread Scan")
     results = []
     try:
         catalog_url = f"https://a.4cdn.org/{FOURCHAN_BOARD}/catalog.json"
-        r = requests.get(catalog_url, headers=HEADERS, timeout=10)
+        r = requests.get(catalog_url, headers=HEADERS, timeout=12)
         if r.status_code != 200:
-            print(f"  ✗ 4chan catalog failed: HTTP {r.status_code}")
             return []
             
         catalog = r.json()
-        processed_threads = 0
+        target_threads = []
         
-        # Look across more pages since video frequency on /x/ is sparse
+        # Phase 1: Identify active threads mentioning positive keywords
         for page in catalog[:8]:
             for thread in page.get("threads", []):
-                thread_no = thread.get("no")
-                ext = thread.get("ext", "")
-                
-                if ext not in (".webm", ".mp4"):
-                    continue
-                    
                 comment = re.sub(r"<[^>]+>", " ", thread.get("com", ""))
-                title = thread.get("sub") or comment[:80] or f"UAP Thread {thread_no}"
+                title = thread.get("sub", "")
                 
-                if not _passes_filter(title, comment):
+                # Check keywords in OP title or body
+                combined_text = (title + " " + comment).lower()
+                if any(kw in combined_text for kw in POSITIVE_KEYWORDS):
+                    if not any(neg in combined_text for neg in NEGATIVE_KEYWORDS):
+                        target_threads.append(thread.get("no"))
+                        
+        # Phase 2: Pull thread internals to extract uploaded .webm / .mp4 media inside replies
+        target_threads = list(set(target_threads))[:6]  # Limit to top 6 active threads
+        processed = 0
+        
+        for thread_no in target_threads:
+            try:
+                thread_url = f"https://a.4cdn.org/{FOURCHAN_BOARD}/thread/{thread_no}.json"
+                tr = requests.get(thread_url, headers=HEADERS, timeout=10)
+                if tr.status_code != 200:
                     continue
                     
-                tid = thread["tim"]
-                results.append({
-                    "source": f"4chan /{FOURCHAN_BOARD}/",
-                    "author": thread.get("name", "Anonymous"),
-                    "title": title,
-                    "description": comment,
-                    "media_url": f"https://i.4cdn.org/{FOURCHAN_BOARD}/{tid}{ext}",
-                    "thumbnail_url": f"https://i.4cdn.org/{FOURCHAN_BOARD}/{tid}s.jpg",
-                    "media_type": "video",
-                    "audio_url": "",
-                    "source_url": f"https://boards.4channel.org/{FOURCHAN_BOARD}/thread/{thread_no}",
-                    "score": 0,
-                    "platform": "4chan"
-                })
-                processed_threads += 1
-                
-        print(f"     Found {processed_threads} matching video threads on 4chan.")
+                posts = tr.json().get("posts", [])
+                for post in posts:
+                    ext = post.get("ext", "")
+                    if ext in (".webm", ".mp4"):
+                        comment = re.sub(r"<[^>]+>", " ", post.get("com", ""))
+                        # Fallback parsing for title
+                        post_title = post.get("sub") or comment[:80] or f"Reply attachment on Thread {thread_no}"
+                        
+                        tid = post["tim"]
+                        results.append({
+                            "source": f"4chan /{FOURCHAN_BOARD}/",
+                            "author": post.get("name", "Anonymous"),
+                            "title": post_title,
+                            "description": comment,
+                            "media_url": f"https://i.4cdn.org/{FOURCHAN_BOARD}/{tid}{ext}",
+                            "thumbnail_url": f"https://i.4cdn.org/{FOURCHAN_BOARD}/{tid}s.jpg",
+                            "media_type": "video",
+                            "audio_url": "",
+                            "source_url": f"https://boards.4channel.org/{FOURCHAN_BOARD}/thread/{thread_no}#p{post.get('no')}",
+                            "score": 0,
+                            "platform": "4chan"
+                        })
+                        processed += 1
+            except Exception:
+                continue
+            time.sleep(1.0)  # Politeness delay for 4chan API
+            
+        print(f"     Deep-Thread scan located {processed} matching videos inside active replies.")
     except Exception as e:
-        print(f"  ✗ 4chan error: {e}")
+        print(f"  ✗ 4chan Deep-Thread Scan failed: {e}")
         
     return results
 
 
 def fetch_all_sources() -> List[Dict]:
     results = []
-    # Merge findings from open channels
-    results.extend(fetch_lemmy_sources())
-    results.extend(fetch_4chan_sources())
+    
+    try:
+        results.extend(fetch_reddit_sources())
+    except Exception as e:
+        print(f"⚠️ Reddit scrape error: {e}")
+
+    try:
+        results.extend(fetch_lemmy_sources())
+    except Exception as e:
+        print(f"⚠️ Lemmy scrape error: {e}")
+
+    try:
+        results.extend(fetch_4chan_sources())
+    except Exception as e:
+        print(f"⚠️ 4chan scrape error: {e}")
+
     random.shuffle(results)
     return results
 
@@ -290,7 +444,7 @@ def check_and_zip_if_full():
 
 
 def build_ledger():
-    print("🛸  AXIOM UAP — Open-Network Video Archivist\n")
+    print("🛸  AXIOM UAP — Core Video Archivist\n")
     ledger   = load_ledger()
     existing = {b["source_url"] for b in ledger}
     new_data = fetch_all_sources()
@@ -313,12 +467,12 @@ def build_ledger():
             else:
                 archived = _download(s["media_url"], final_path)
                 if archived and not _valid(final_path):
-                    print(f"   ✗ File too small/corrupt — discarding.")
+                    print(f"   ✗ File corrupt or incomplete — discarding.")
                     try: os.remove(final_path)
                     except: pass
                     archived = False
 
-            # If local download fails, fall back gracefully to the original CDN url
+            # If local processing failed, fallback to direct target URL
             if not archived:
                 local_url = s["media_url"]
 
@@ -342,7 +496,7 @@ def build_ledger():
         existing.add(s["source_url"])
         added += 1
 
-    save_ledger(ledger) # Save the ledger even if 0 items were added, to maintain integrity
+    save_ledger(ledger)
     check_and_zip_if_full()
     print(f"\n✅  Done — {added} new video sightings archived.")
 
