@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install requests
+          pip install requests moviepy
 
       - name: Run Scraper (Scan Reddit & 4chan for UFO Media)
         run: python -u engine.py
