@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "timestamp": "2026-06-12T05:18:27.063513+00:00",
+    "source": "Lemmy c/uap",
+    "author": "noumenon",
+    "title": "Full recording of the public 2023 House Oversight and Accountability subcommittee hearing on Unidentified Anomalous Phenomena (UAP)",
+    "description": "",
+    "media_url": "https://upload.wikimedia.org/wikipedia/commons/a/a1/2023_House_Oversight_and_Accountability_Hearing_on_UAP_%E2%80%93_Unidentified_Anomalous_Phenomena_%E2%80%93_Implications_on_National_Security%2C_Public_Safety%2C_and_Government_Transparency.webm",
+    "thumbnail_url": "",
+    "media_type": "video",
+    "source_url": "https://lemmy.world/post/41035300",
+    "hash": "6efdbb4d2a674abc63de10f72dc9e362797a00dfa80b1b15d888464bfed02fcc",
+    "score": 3,
+    "platform": "lemmy_direct"
+  },
+  {
+    "timestamp": "2026-06-12T05:18:27.034111+00:00",
+    "source": "Lemmy c/ufos",
+    "author": "noumenon",
+    "title": "Full recording of the public 2023 House Oversight and Accountability subcommittee hearing on Unidentified Anomalous Phenomena (UAP)",
+    "description": "",
+    "media_url": "https://upload.wikimedia.org/wikipedia/commons/a/a1/2023_House_Oversight_and_Accountability_Hearing_on_UAP_%E2%80%93_Unidentified_Anomalous_Phenomena_%E2%80%93_Implications_on_National_Security%2C_Public_Safety%2C_and_Government_Transparency.webm",
+    "thumbnail_url": "",
+    "media_type": "video",
+    "source_url": "https://lemmy.world/post/41035298",
+    "hash": "7348df7fa84b10a181bd7a8e782192cd02aceffc1d6cd951f95d6f9b5901c0b8",
+    "score": 3,
+    "platform": "lemmy_direct"
+  }
+]
