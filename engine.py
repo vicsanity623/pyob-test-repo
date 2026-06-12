@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import random
 import time
 import re
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional
 from moviepy import VideoFileClip, AudioFileClip
 from ledger_manager import load_ledger, save_ledger
 
@@ -37,19 +37,18 @@ POSITIVE_KEYWORDS = ["ufo", "uap", "orb", "saucer", "tic tac", "tic-tac", "trian
 NEGATIVE_KEYWORDS = ["furry", "meme", "cgi", "vfx", "blender", "movie", "game", "art", "drawing", "tattoo", "fiction", "joke", "animation", "render", "satire", "deepfake", "photoshop", "minecraft"]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# PLAYWRIGHT STEALTH REDDIT SCRAPER
+# PLAYWRIGHT STEALTH REDDIT SCRAPER (v2.x compatible)
 # ─────────────────────────────────────────────────────────────────────────────
 from playwright.sync_api import sync_playwright
-from playwright_stealth import stealth_sync
+from playwright_stealth import Stealth
 
 def fetch_reddit_sources_playwright() -> List[Dict]:
     results = []
     subs = REDDIT_SUBS.copy()
     random.shuffle(subs)
-    selected_subs = subs[:2]  # Keep load very low
+    selected_subs = subs[:2]  # Very low load
 
-    with sync_playwright() as p:
-        # Launch with strong stealth settings
+    with Stealth().use_sync(sync_playwright()) as p:  # Modern v2 API
         browser = p.chromium.launch(
             headless=True,
             args=[
@@ -62,58 +61,54 @@ def fetch_reddit_sources_playwright() -> List[Dict]:
             viewport={"width": 1920, "height": 1080},
             user_agent=random.choice([
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0"
             ]),
             locale="en-US",
             timezone_id="America/New_York"
         )
         page = context.new_page()
-        stealth_sync(page)  # Apply full stealth patches
 
         for sub in selected_subs:
-            print(f" 📡 Playwright → /r/{sub}")
+            print(f" 📡 Playwright Stealth → /r/{sub}")
             try:
                 sort = random.choice(["hot", "new", "rising"])
                 url = f"https://www.reddit.com/r/{sub}/{sort}/"
-                page.goto(url, wait_until="networkidle", timeout=45000)
+                page.goto(url, wait_until="networkidle", timeout=60000)
 
-                # Human-like scroll and wait
-                page.evaluate("window.scrollBy(0, 800)")
-                time.sleep(random.uniform(2.5, 5.5))
-                page.evaluate("window.scrollBy(0, 1200)")
-                time.sleep(random.uniform(1.8, 4.2))
+                # Human-like behavior
+                time.sleep(random.uniform(2, 4))
+                page.evaluate("window.scrollBy(0, 700)")
+                time.sleep(random.uniform(1.5, 3.5))
+                page.evaluate("window.scrollBy(0, 900)")
 
-                # Extract posts via JS evaluation (more reliable than parsing HTML)
+                # Extract posts
                 posts = page.evaluate("""() => {
                     const posts = [];
-                    document.querySelectorAll('div[data-testid="post-container"]').forEach(post => {
-                        const titleEl = post.querySelector('h3');
-                        const scoreEl = post.querySelector('[id^="vote-arrows"]');
-                        const link = post.querySelector('a[data-testid="post-title-link"]');
+                    document.querySelectorAll('shreddit-post, div[data-testid="post-container"]').forEach(post => {
+                        const titleEl = post.querySelector('h3, [slot="title"]');
+                        const scoreEl = post.querySelector('[id^="vote-arrows"] span, .score');
+                        const link = post.querySelector('a');
                         if (titleEl && link) {
-                            const title = titleEl.innerText;
-                            const score = parseInt(scoreEl ? scoreEl.innerText.replace(/[^0-9k]/g, '') : '0') || 0;
+                            const title = titleEl.innerText.trim();
+                            let score = 0;
+                            if (scoreEl) {
+                                const scoreText = scoreEl.innerText.replace(/[^0-9k]/g, '');
+                                score = scoreText.includes('k') ? parseFloat(scoreText) * 1000 : parseInt(scoreText);
+                            }
                             const permalink = link.href;
-                            const isVideo = post.querySelector('video') || permalink.includes('v.redd.it');
-                            if (isVideo || title.toLowerCase().includes('video') || title.toLowerCase().includes('footage')) {
-                                posts.push({
-                                    title: title,
-                                    score: score,
-                                    permalink: permalink,
-                                    url: link.href
-                                });
+                            const isVideo = post.querySelector('video') || permalink.includes('v.redd.it') || title.toLowerCase().includes('video');
+                            if (isVideo && score >= 10) {
+                                posts.push({title, score, permalink, url: permalink});
                             }
                         }
                     });
-                    return posts;
+                    return posts.slice(0, 6);
                 }""")
 
-                for post in posts[:8]:  # Limit per sub
-                    if post["score"] < MIN_SCORE:
-                        continue
+                for post in posts:
                     title = post["title"]
-                    body = ""  # Selftext hard to get reliably without extra clicks
+                    body = ""
                     if not any(kw in (title + body).lower() for kw in POSITIVE_KEYWORDS):
                         continue
                     if any(kw in (title + body).lower() for kw in NEGATIVE_KEYWORDS):
@@ -124,7 +119,7 @@ def fetch_reddit_sources_playwright() -> List[Dict]:
                         "author": "Anonymous",
                         "title": title,
                         "description": body,
-                        "media_url": post["url"],  # Will be resolved later if needed
+                        "media_url": post["url"],
                         "thumbnail_url": "",
                         "media_type": "video",
                         "audio_url": "",
@@ -132,25 +127,22 @@ def fetch_reddit_sources_playwright() -> List[Dict]:
                         "score": post["score"],
                         "platform": "reddit_playwright"
                     })
-                print(f" ✅ Found {len([p for p in posts if p['score'] >= MIN_SCORE])} candidates from /r/{sub}")
+                print(f" ✅ Extracted {len(posts)} candidates from /r/{sub}")
             except Exception as e:
                 print(f" ✗ Playwright error on /r/{sub}: {e}")
-            time.sleep(random.uniform(8, 18))  # Long delay between subs
+            time.sleep(random.uniform(10, 20))  # Long cooldown
 
         browser.close()
     return results
 
 # ─────────────────────────────────────────────────────────────────────────────
-# EXISTING HELPERS (Lemmy, 4chan, download, etc.)
+# HELPERS (Download, Merge, etc.)
 # ─────────────────────────────────────────────────────────────────────────────
-def _download(url: str, dest: str, max_bytes: int = MAX_FILE_BYTES, referer: Optional[str] = None) -> bool:
-    # Keep your existing _download with requests for media (or extend with playwright if needed)
+def _download(url: str, dest: str, max_bytes: int = MAX_FILE_BYTES) -> bool:
     import requests
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-    }
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
     try:
-        r = requests.get(url, stream=True, timeout=35, headers=headers)
+        r = requests.get(url, stream=True, timeout=40, headers=headers)
         if r.status_code == 200:
             with open(dest, "wb") as f:
                 for chunk in r.iter_content(16384):
@@ -158,8 +150,8 @@ def _download(url: str, dest: str, max_bytes: int = MAX_FILE_BYTES, referer: Opt
                     if f.tell() > max_bytes:
                         return False
             return True
-    except Exception:
-        pass
+    except Exception as e:
+        print(f" ✗ Download failed: {e}")
     return False
 
 def _valid(path: str) -> bool:
@@ -170,38 +162,31 @@ def _reddit_audio_url(video_url: str) -> str:
     return re.sub(r"/DASH_[^/]+\.mp4$", "/DASH_audio.mp4", base)
 
 def merge_reddit_video(video_url: str, audio_url: str, final_path: str) -> bool:
-    # Same as your original merge function
     v_tmp = final_path + ".v.tmp"
     a_tmp = final_path + ".a.tmp"
-    ok = False
     try:
+        print(f" ↓ video track …")
         if not _download(video_url, v_tmp) or not _valid(v_tmp):
             return False
+        print(f" ↓ audio track …")
         has_audio = _download(audio_url, a_tmp) and _valid(a_tmp)
         if has_audio:
             vc = VideoFileClip(v_tmp)
             ac = AudioFileClip(a_tmp)
+            print(f" ⚙ merging …")
             vc.with_audio(ac).write_videofile(final_path, fps=30, codec="libx264", audio_codec="aac", audio_bitrate="192k", logger=None)
             vc.close(); ac.close()
         else:
             shutil.copy(v_tmp, final_path)
-        ok = _valid(final_path)
+        return _valid(final_path)
     except Exception as e:
         print(f" ✗ Merge error: {e}")
+        return False
     finally:
         for p in (v_tmp, a_tmp):
             if os.path.exists(p):
                 try: os.remove(p)
                 except: pass
-    return ok
-
-def _passes_filter(title: str, body: str, score: int = MIN_SCORE) -> bool:
-    combined = (title + " " + body).lower()
-    if not any(kw in combined for kw in POSITIVE_KEYWORDS):
-        return False
-    if any(kw in combined for kw in NEGATIVE_KEYWORDS):
-        return False
-    return score >= MIN_SCORE
 
 def fetch_lemmy_sources() -> List[Dict]:
     results = []
@@ -326,7 +311,7 @@ def fetch_all_sources() -> List[Dict]:
     random.shuffle(results)
     return results
 
-# ARCHIVAL FUNCTIONS (copy from your previous working version)
+# Archival functions (copy from your original)
 def _zip_media_folder():
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     out = f"{ZIP_PREFIX}_{ts}.zip"
@@ -343,7 +328,7 @@ def check_and_zip_if_full():
         _zip_media_folder()
 
 def build_ledger():
-    print("🛸 AXIOM UAP — Core Video Archivist (Playwright Edition)\n")
+    print("🛸 AXIOM UAP — Playwright Stealth Edition\n")
     ledger = load_ledger()
     existing = {b["source_url"] for b in ledger}
     new_data = fetch_all_sources()
@@ -356,39 +341,29 @@ def build_ledger():
         local_url = f"./media/{file_id}.mp4"
         if not os.path.exists(final_path):
             print(f"\n📦 {s['title'][:60]}")
-            print(f" {s['source']} | {s['platform']}")
-            if s["platform"] == "reddit_native" or "reddit_playwright" in s["platform"]:
+            if "reddit_playwright" in s.get("platform", ""):
                 archived = merge_reddit_video(s["media_url"], s.get("audio_url", ""), final_path)
             else:
                 archived = _download(s["media_url"], final_path)
-            if archived and not _valid(final_path):
-                try: os.remove(final_path)
-                except: pass
-                archived = False
-            if not archived:
+            if not archived or not _valid(final_path):
                 local_url = s["media_url"]
+        # Save to ledger (same as before)
         timestamp = datetime.now(timezone.utc).isoformat()
         payload = f"{timestamp}|{s['source']}|{s['title']}|{s['media_url']}|{s['score']}"
         ledger.insert(0, {
-            "timestamp": timestamp,
-            "source": s["source"],
-            "author": s["author"],
-            "title": s["title"],
-            "description": s["description"][:800],
-            "media_url": local_url,
-            "thumbnail_url": s["thumbnail_url"],
-            "media_type": "video",
-            "source_url": s["source_url"],
+            "timestamp": timestamp, "source": s["source"], "author": s["author"],
+            "title": s["title"], "description": s["description"][:800],
+            "media_url": local_url, "thumbnail_url": s.get("thumbnail_url", ""),
+            "media_type": "video", "source_url": s["source_url"],
             "hash": hashlib.sha256(payload.encode()).hexdigest(),
-            "score": s["score"],
-            "platform": s.get("platform", "unknown")
+            "score": s["score"], "platform": s.get("platform", "unknown")
         })
         existing.add(s["source_url"])
         added += 1
-        time.sleep(random.uniform(3, 8))
+        time.sleep(random.uniform(4, 10))
     save_ledger(ledger)
     check_and_zip_if_full()
-    print(f"\n✅ Done — {added} new video sightings archived.")
+    print(f"\n✅ Done — {added} new sightings.")
 
 if __name__ == "__main__":
     build_ledger()
