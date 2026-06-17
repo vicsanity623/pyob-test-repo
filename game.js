@@ -80,7 +80,7 @@ function updateHub() {
     document.getElementById('hub-name').innerText = gameState.name;
     document.getElementById('hub-level').innerText = gameState.level;
     document.getElementById('xp-bar').style.width = `${(gameState.xp / gameState.maxXp) * 100}%`;
-    document.getElementById('hub-sprite').src = `assets/sprites/${gameState.id}_animated.gif`;
+    document.getElementById('hub-sprite').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${gameState.id}.gif`;
 
     // Draw Hearts
     let heartsHtml = '';
