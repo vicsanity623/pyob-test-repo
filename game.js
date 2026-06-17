@@ -276,7 +276,21 @@ function playerAttack() {
 
     const enemy = document.getElementById('enemy-sprite');
     enemy.classList.add('animate-shake');
-    setTimeout(() => enemy.classList.remove('animate-shake'), 500);
+
+    const slash = document.createElement('div');
+    slash.className = 'slash-effect';
+    document.getElementById('battle-screen').appendChild(slash);
+
+    const dmgText = document.createElement('div');
+    dmgText.className = 'floating-text';
+    dmgText.innerText = `-${damage}`;
+    document.getElementById('battle-screen').appendChild(dmgText);
+
+    setTimeout(() => {
+        enemy.classList.remove('animate-shake');
+        slash.remove();
+        dmgText.remove();
+    }, 500);
 
     if(eHp <= 0) endBattle(true);
 }
