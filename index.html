@@ -108,9 +108,13 @@
         </div>
 
         <!-- Moves UI -->
-        <div class="glass-panel p-6 rounded-t-3xl h-1/3 grid grid-cols-2 gap-4">
-            <button onclick="playerAttack()" class="bg-blue-600 rounded-xl font-bold text-xl active:bg-blue-400">Tackle</button>
-            <button onclick="playerAttack()" class="bg-indigo-600 rounded-xl font-bold text-xl active:bg-indigo-400">Growl</button>
+        <div id="moves-container" class="glass-panel p-6 rounded-t-3xl h-1/3 grid grid-cols-2 gap-4">
+            <!-- Moves injected here by game.js -->
+        </div>
+        <!-- Move Replacement Modal -->
+        <div id="move-modal" class="fixed inset-0 bg-black bg-opacity-90 z-[200] hidden flex flex-col items-center justify-center p-6">
+            <h3 id="modal-title" class="text-xl font-bold mb-4">Replace a move?</h3>
+            <div id="replace-moves-list" class="grid grid-cols-1 gap-2 w-full max-w-xs"></div>
         </div>
     </div>
 

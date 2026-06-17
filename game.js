@@ -308,11 +308,12 @@ function enterBattle() {
     }, 1200);
 }
 
-function playerAttack() {
-    let damage = gameState.attack;
-    // Great mood 1-hit KO chance
+function playerAttack(moveIndex = 0, enemyType = 'Normal') {
+    const move = gameState.moves[moveIndex];
+    const multiplier = TYPE_CHART[move.type][enemyType] || 1;
+    let damage = Math.floor(gameState.attack * (move.power / 10) * multiplier);
+
     if(gameState.hearts >= 5 && Math.random() < 0.1) damage = 999;
-    
     eHp -= damage;
     updateHealthBars();
     
