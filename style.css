@@ -44,3 +44,41 @@
     image-rendering: crisp-edges;
     image-rendering: pixelated;
 }
+
+/* Battle Animations */
+@keyframes lunge {
+    0% { transform: translateX(-40px) scale(1); }
+    50% { transform: translateX(20px) scale(1.1); }
+    100% { transform: translateX(-40px) scale(1); }
+}
+.anim-lunge { animation: lunge 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+
+@keyframes shake {
+    0% { transform: translate(40px, 1px) rotate(0deg); }
+    20% { transform: translate(37px, -2px) rotate(-2deg); }
+    40% { transform: translate(43px, 0px) rotate(2deg); }
+    60% { transform: translate(37px, 2px) rotate(0deg); }
+    80% { transform: translate(43px, -1px) rotate(2deg); }
+    100% { transform: translate(40px, 0px) rotate(0deg); }
+}
+.anim-shake { animation: shake 0.4s; }
+
+@keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    80% { opacity: 0.8; }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
+}
+.floating-text {
+    position: absolute;
+    font-weight: 900;
+    color: white;
+    font-size: 2rem;
+    text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    animation: floatUp 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    pointer-events: none;
+    z-index: 50;
+    top: 20%;
+    right: 20%;
+}
+.text-super { color: #facc15; }
+.text-weak { color: #9ca3af; }
