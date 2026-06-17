@@ -2,7 +2,15 @@
 let gameState = {
     id: 1, name: 'Bulbasaur', level: 5, xp: 0, maxXp: 100, 
     hearts: 2, attack: 10, defense: 10, maxHp: 50,
-    berries: 5, lastInteraction: Date.now()
+    berries: 5, lastInteraction: Date.now(),
+    type: 'Grass', moves: [{name: 'Tackle', type: 'Normal', power: 10}]
+};
+
+const TYPE_CHART = {
+    'Fire': { 'Grass': 2, 'Water': 0.5, 'Normal': 1 },
+    'Water': { 'Fire': 2, 'Grass': 0.5, 'Normal': 1 },
+    'Grass': { 'Water': 2, 'Fire': 0.5, 'Normal': 1 },
+    'Normal': { 'Fire': 1, 'Water': 1, 'Grass': 1 }
 };
 
 // Heart Depletion Interval (Loses 1 heart every 60 seconds)
@@ -300,11 +308,12 @@ function enterBattle() {
     }, 1200);
 }
 
-function playerAttack() {
-    let damage = gameState.attack;
-    // Great mood 1-hit KO chance
+function playerAttack(moveIndex = 0, enemyType = 'Normal') {
+    const move = gameState.moves[moveIndex];
+    const multiplier = TYPE_CHART[move.type][enemyType] || 1;
+    let damage = Math.floor(gameState.attack * (move.power / 10) * multiplier);
+
     if(gameState.hearts >= 5 && Math.random() < 0.1) damage = 999;
-    
     eHp -= damage;
     updateHealthBars();
     
