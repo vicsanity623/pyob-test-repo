@@ -118,6 +118,30 @@
     </div>
 
     <script src="game.js"></script>
+    <script>
+        function showMoveModal(newMove, currentMoves, onReplace, onForget) {
+            const modal = document.getElementById('move-modal');
+            const container = document.getElementById('move-options');
+            container.innerHTML = '';
+            document.getElementById('modal-title').innerText = `Learn ${newMove.name}?`;
+
+            currentMoves.forEach((move, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-gray-700 p-3 rounded-lg text-left hover:bg-gray-600';
+                btn.innerText = `Replace ${move.name}`;
+                btn.onclick = () => { onReplace(index); modal.classList.add('hidden'); };
+                container.appendChild(btn);
+            });
+
+            const skipBtn = document.createElement('button');
+            skipBtn.className = 'bg-red-900 p-3 rounded-lg text-center mt-2';
+            skipBtn.innerText = 'Forget new move';
+            skipBtn.onclick = () => { onForget(); modal.classList.add('hidden'); };
+            container.appendChild(skipBtn);
+
+            modal.classList.remove('hidden');
+        }
+    </script>
     <!-- Move Learning Modal -->
     <div id="move-modal" class="hidden absolute inset-0 bg-black/80 z-[100] flex items-center justify-center p-6">
         <div class="bg-gray-800 p-6 rounded-2xl w-full max-w-sm border border-gray-600">
