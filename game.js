@@ -308,9 +308,8 @@ function enterBattle() {
     }, 1200);
 }
 
-function playerAttack(moveIndex = 0) {
+function playerAttack(moveIndex = 0, enemyType = 'Normal') {
     const move = gameState.moves[moveIndex];
-    const enemyType = 'Normal'; // Placeholder for enemy type
     const multiplier = TYPE_CHART[move.type][enemyType] || 1;
     let damage = Math.floor(gameState.attack * (move.power / 10) * multiplier);
 
