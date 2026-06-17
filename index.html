@@ -122,8 +122,9 @@
         function showMoveModal(newMove, currentMoves, onReplace, onForget) {
             const modal = document.getElementById('move-modal');
             const container = document.getElementById('move-options');
+            const charName = document.getElementById('hub-name').innerText;
             container.innerHTML = '';
-            document.getElementById('modal-title').innerText = `Learn ${newMove.name}?`;
+            document.getElementById('modal-title').innerText = `${charName} wants to learn ${newMove.name}, but already knows 4 moves!`;
 
             currentMoves.forEach((move, index) => {
                 const btn = document.createElement('button');
