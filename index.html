@@ -46,6 +46,7 @@
 
     <!-- 4. MAIN HUB (CARE SYSTEM) -->
     <div id="hub-screen" class="screen flex flex-col h-full bg-gradient-to-b from-green-900 to-gray-900 w-full absolute hidden relative">
+        <div id="time-overlay" class="absolute inset-0 pointer-events-none z-20 transition-colors duration-1000"></div>
         <!-- Stats Top Bar -->
         <div class="flex justify-between items-center p-6 glass-panel m-4 rounded-2xl">
             <div>
@@ -59,6 +60,7 @@
 
         <!-- Pokemon Sprite Area -->
         <div id="sprite-container" class="flex-1 flex items-center justify-center relative touch-area">
+            <div id="petting-zone" class="absolute inset-0 z-10 cursor-pointer"></div>
             <div id="swirl-effect" class="absolute w-48 h-48 rounded-full border-4 border-pink-500 hidden opacity-0"></div>
             <img id="hub-sprite" src="" class="w-64 h-64 object-contain filter drop-shadow-2xl transition-transform duration-300 transform scale-100 pixel-perfect">
         </div>
@@ -127,6 +129,25 @@
     </div>
 
     <script src="game.js"></script>
-  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
+    <script>
+        function updateEnvironment() {
+            const hour = new Date().getHours();
+            const overlay = document.getElementById('time-overlay');
+            if (!overlay) return;
+            if (hour >= 6 && hour < 18) {
+                overlay.className = 'absolute inset-0 pointer-events-none z-20 transition-colors duration-1000 time-day';
+            } else if (hour >= 18 && hour < 20) {
+                overlay.className = 'absolute inset-0 pointer-events-none z-20 transition-colors duration-1000 time-evening';
+            } else {
+                overlay.className = 'absolute inset-0 pointer-events-none z-20 transition-colors duration-1000 time-night';
+            }
+        }
+        updateEnvironment();
+        setInterval(updateEnvironment, 60000);
+
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('sw.js').catch(() => console.warn('Service Worker registration failed.'));
+      }
+  </script>
 </body>
 </html>
