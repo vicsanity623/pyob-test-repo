@@ -338,29 +338,15 @@
         </div>
     </div>
 
-    <script src="game.js"></script>
     <script src="global.js"></script>
+    <script src="effects.js"></script>
+    <script src="game.js"></script>
     <script src="inventory.js"></script>
     <script src="battle.js"></script>
     <script>
-        function updateEnvironment() {
-            const hour = new Date().getHours();
-            const overlay = document.getElementById('time-overlay');
-            if (!overlay) return;
-            if (hour >= 6 && hour < 18) {
-                overlay.className = 'absolute inset-0 pointer-events-none z-20 transition-colors duration-1000 time-day';
-            } else if (hour >= 18 && hour < 20) {
-                overlay.className = 'absolute inset-0 pointer-events-none z-20 transition-colors duration-1000 time-evening';
-            } else {
-                overlay.className = 'absolute inset-0 pointer-events-none z-20 transition-colors duration-1000 time-night';
-            }
-        }
-        updateEnvironment();
-        setInterval(updateEnvironment, 60000);
-
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('sw.js').catch(() => console.warn('Service Worker registration failed.'));
-      }
+            navigator.serviceWorker.register('sw.js').catch(() => console.warn('Service Worker registration failed.'));
+        }
     </script>
 </body>
 </html>

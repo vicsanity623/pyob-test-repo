@@ -333,33 +333,7 @@ function throwPokeBall() {
     }, 1200);
 }
 
-// --- FLOATING COMBAT TEXT & HIT REACTION ENGINE ---
-function spawnFloatingText(targetWrapperId, text, type = 'damage') {
-    const container = document.getElementById(targetWrapperId);
-    if (!container) return;
-
-    const el = document.createElement('div');
-    let colorClass = (type === 'heal') ? 'floating-heal' : ((type === 'crit' || type === 'super') ? 'floating-crit text-base' : 'floating-damage text-lg');
-    el.className = `floating-combat-text ${colorClass}`;
-    el.innerText = text;
-    
-    // Slight random offset so multi-hits don't stack directly on top of each other
-    let randX = Math.floor(Math.random() * 24) - 12;
-    el.style.left = `calc(50% + ${randX}px)`;
-    el.style.top = '10%';
-
-    container.appendChild(el);
-    setTimeout(() => { if (el.parentNode) el.remove(); }, 950);
-}
-
-function triggerHitReaction(spriteId) {
-    const sprite = document.getElementById(spriteId);
-    if (!sprite) return;
-    sprite.classList.remove('hit-flash-effect');
-    void sprite.offsetWidth; // Trigger DOM reflow to restart animation
-    sprite.classList.add('hit-flash-effect');
-    setTimeout(() => sprite.classList.remove('hit-flash-effect'), 450);
-}
+// (spawnFloatingText & triggerHitReaction are loaded from effects.js)
 
 // --- PLAYER ATTACK ---
 function playerAttack(slot = 0) {

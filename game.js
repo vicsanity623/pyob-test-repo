@@ -232,37 +232,7 @@ function updateHub() {
     localStorage.setItem('pokeSave', JSON.stringify(gameState));
 }
 
-// --- FANNED 20-BERRY CARD STACK RENDERER ---
-function renderBerryStack() {
-    const container = document.getElementById('berry-stack-container');
-    if (!container) return;
-    
-    let count = gameState.gardenBerries || 0;
-    container.innerHTML = '';
-
-    if (count <= 0) {
-        container.innerHTML = `<span class="text-2xl select-none">🌳</span>`;
-        return;
-    }
-
-    let maxSpreadX = 14;
-    let maxAngle = 36;
-
-    for (let i = 0; i < count; i++) {
-        let ratio = count > 1 ? (i / (count - 1)) : 0.5;
-        let xOffset = (ratio - 0.5) * maxSpreadX * 2;
-        let rot = (ratio - 0.5) * maxAngle;
-        let yArch = -Math.sin(ratio * Math.PI) * 4;
-
-        let berrySpan = document.createElement('span');
-        berrySpan.innerText = '🍓';
-        berrySpan.className = 'absolute text-2xl select-none pointer-events-none filter drop-shadow transition-all duration-300';
-        berrySpan.style.zIndex = i + 1;
-        berrySpan.style.transform = `translate(${xOffset.toFixed(1)}px, ${yArch.toFixed(1)}px) rotate(${rot.toFixed(1)}deg)`;
-        
-        container.appendChild(berrySpan);
-    }
-}
+// (renderBerryStack is loaded from effects.js)
 
 // --- HARVEST BERRY BUSH ---
 function harvestBush() {
@@ -489,35 +459,7 @@ function switchActivePokemon(index) {
     showModal("Partner Swapped! 🔄", `You are now adventuring with ${gameState.name} (${(TYPE_DATABASE[gameState.type] || TYPE_DATABASE.normal).name} Type)!`);
 }
 
-// --- PETTING SWIRL MECHANIC ---
-let touchTimer;
-let isSwirling = false;
-const spriteContainer = document.getElementById('sprite-container');
-const hubSprite = document.getElementById('hub-sprite');
-
-hubSprite.ondragstart = () => false;
-spriteContainer.style.touchAction = 'none';
-
-function startSwirl(e) {
-    if (e.target.closest('#berry-bush')) return;
-    e.preventDefault();
-    isSwirling = true;
-    touchTimer = setTimeout(() => {
-        if(isSwirling) gainHeart();
-    }, 2000);
-}
-
-function stopSwirl() {
-    isSwirling = false;
-    clearTimeout(touchTimer);
-}
-
-spriteContainer.addEventListener('touchstart', startSwirl, {passive: false});
-spriteContainer.addEventListener('mousedown', startSwirl);
-window.addEventListener('touchend', stopSwirl);
-window.addEventListener('mouseup', stopSwirl);
-window.addEventListener('touchcancel', stopSwirl);
-
+// (Petting swirl touch interaction is handled by effects.js)
 function gainHeart() {
     if(gameState.hearts < 10) {
         gameState.hearts++;
